@@ -1,0 +1,17 @@
+Description: use /usr/bin/editor as fallback editor, not nano
+Author: Martin <debacle@debian.org>
+Origin: vendor
+Last-Update: 2020-04-01
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/quodlibet/operon/util.py
++++ b/quodlibet/operon/util.py
+@@ -116,7 +116,7 @@
+     return tags
+ 
+ 
+-def get_editor_args(fallback_command="nano"):
++def get_editor_args(fallback_command="/usr/bin/editor"):
+     """Returns a list starting with a command and optional arguments
+     for editing text files.
+ 

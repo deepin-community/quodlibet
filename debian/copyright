@@ -1,0 +1,137 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: quodlibet
+Upstream-Contact: reiter.christoph@gmail.com, nick.boultbee@gmail.com
+Source: https://github.com/quodlibet/quodlibet
+
+Files: *
+Copyright: 2004-2010 Joe Wreschnig <joe.wreschnig@gmail.com>
+    2004-2016 Michael Urman <murman@gmail.com>
+    2005-2007 Zdzichu Zabierzewski <zdzichu@gmail.com>
+    2005,2006 Joshua Kwan <joshk@triplehelix.org>
+    2006-2008 Markus Koller <toupeira@gmx.ch>
+    2006-2008 Lukáš Lalinský <lalinsky@gmail.com>
+    2006-2010 Hans van Dok <dok@xs4all.nl>
+    2009-2018 Christoph Reiter <reiter.christoph@gmail.com>
+    2009,2010 Steven Robertson <steven@strobe.cc>
+    2010-2018 Nick B <nick@declension.com>
+    2013,2014 Simonas Kazlauskas <git@kazlauskas.me>
+    and others
+License: GPL-2+
+
+Files: debian/*
+Copyright: 2004-2006 Joe Wreschnig <piman@debian.org>
+    2005,2006 Joshua Kwan <joshk@triplehelix.org>
+    2006-2017 Tristan Seligmann <mithrandi@mithrandi.net>
+    2006-2010 Christine Spang <christine@debian.org>
+    2006 Yves-Alexis Perez <corsac@corsac.net>
+    2010-2018 Ondřej Kuzník <ondra@mistotebe.net>
+    2012-2017 Christoph Reiter <reiter.christoph@gmail.com>
+    2017 Ben Hutchings <ben@decadent.org.uk>
+    2018 W. Martin Borgert <debacle@debian.org>
+License: GPL-2+
+
+Files: quodlibet/ext/*
+Copyright: 1998 James Henstridge <james@daa.com.au>
+    2004,2005 Gustavo J. A. M. Carneiro
+    2005-2008 Joe Wreschnig <joe.wreschnig@gmail.com>
+    2005-2008 Eduardo Gonzalez <wm.eddie@gmail.com>
+    2005-2009 Michael Urman <murman@gmail.com>
+    2005-2007 Sergey Fedoseev <fedoseev.sergey@gmail.com>
+    2005,2006 Joshua Kwan <joshk@triplehelix.org>
+    2005 Niklas Janlert <niklasjanlert@gmail.com>
+    2005 Inigo Serna
+    2005 Ton van den Heuvel
+    2005 Adam Hooper <adamh@densi.com>
+    2005 Raphaël Slinckx
+    2006 Steve Frécinaux
+    2006 David Kågedal <davidk@lysator.liu.se>
+    2007 Simon Morgan <zen84964@zen.co.uk>
+    2008-2012 Vasiliy Faronov <vfaronov@gmail.com>
+    2008-2010 Christine Spang <spang@mit.edu>
+    2008 Anthony Bretaudeau <wxcover@users.sourceforge.net>
+    2008 Antonio Riva
+    2008 Jeremy Cantrell <jmcantrell@gmail.com>
+    2008 Andreas Bombe
+    2009-2017 Christoph Reiter <christoph.reiter@gmx.at>
+    2009 Hans van Dok <dok@xs4all.nl>
+    2009,2010 Steven Robertson <steven@strobe.cc>
+    2010-2011 Michaël Ball <michael.ball@gmail.com>
+    2010-2018 Nick B <nick@declension.net>
+    2010 Aymeric Mansoux <aymeric@goto10.org>
+    2010 Felix Krull <f_krull@gmx.de>
+    2011-2015 Anton Shestakov <engored@ya.ru>
+    2012 Martijn Pieters <mj@zopatista.com>
+    2013 Thomas Vogt <goar.vogt@googlemail.com>
+    2013,2014 Simonas Kazlauskas <git@kazlauskas.me>
+    2015-2018 CreamyCookie
+    2016 faubiguy <faubiguy0@gmail.com>
+    2016 0x1777 <syc153@gmail.com>
+    2017 Didier Villevalois <ptitjes@free.fr>
+    2017 Till Berger <till@mellthas.de>
+    2017 Meriipu
+    2017 Kristian Laakkonen <kristian.laakkonen@gmail.com>
+License: GPL-2+
+
+Files: quodlibet/packages/raven/*
+Copyright: 2010-2013 by the Sentry Team
+License: BSD-3-clause
+
+Files: quodlibet/packages/senf/*
+Copyright: 2016 Christoph Reiter
+License: MIT
+
+License: GPL-2+
+ On Debian systems the full text of the GNU GPL v2 can be found
+ in the `/usr/share/common-licenses/GPL-2' file.
+
+License: BSD-3-clause
+ Copyright (c) 2015 Functional Software, Inc and individual contributors.
+ All rights reserved.
+ .
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+ 1. Redistributions of source code must retain the above copyright notice, this
+ list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright notice,
+ this list of conditions and the following disclaimer in the documentation
+ and/or other materials provided with the distribution.
+ .
+ 3. Neither the name of the Raven nor the names of its contributors may be
+ used to endorse or promote products derived from this software without
+ specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: MIT
+ The MIT License
+ .
+ Copyright (c) 2016 Christoph Reiter
+ .
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.

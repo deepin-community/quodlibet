@@ -1,0 +1,6 @@
+version=3
+
+opts=pgpsigurlmangle=s/$/.sig/,\
+dversionmangle=s/\+debian// \
+https://quodlibet.readthedocs.io/en/latest/downloads.html \
+    (?:.*/)?quodlibet-([\d\.]*).tar.gz

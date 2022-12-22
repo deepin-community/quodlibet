@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+%:
+	dh $@ --with python3,sphinxdoc --buildsystem=pybuild
+
+override_dh_auto_build:
+	dh_auto_build
+	./setup.py build_sphinx
+
+override_dh_installchangelogs:
+	dh_installchangelogs -k NEWS.rst
+
+override_dh_auto_test:

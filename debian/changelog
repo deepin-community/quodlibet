@@ -1,0 +1,837 @@
+quodlibet (4.4.0-2) unstable; urgency=medium
+
+  * Team upload
+  * Re-upload to unstable
+
+ -- Martin <debacle@debian.org>  Sat, 21 Aug 2021 23:27:47 +0000
+
+quodlibet (4.4.0-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream version
+
+  [ Ondřej Nový ]
+  * d/control: Update Maintainer field with new Debian Python Team
+    contact address.
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Debian Janitor ]
+  * Set upstream metadata fields: Bug-Submit.
+  * Re-export upstream signing key without extra signatures.
+
+ -- Martin <debacle@debian.org>  Fri, 12 Mar 2021 12:44:00 +0000
+
+quodlibet (4.3.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version
+
+ -- Martin <debacle@debian.org>  Tue, 26 May 2020 17:32:47 +0000
+
+quodlibet (4.2.1-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Ondřej Nový ]
+  * Use debhelper-compat instead of debian/compat.
+  * d/control: Remove ancient X-Python3-Version field.
+
+  [ Debian Janitor ]
+  * Bump debhelper from old 10 to 12.
+  * Set upstream metadata fields: Bug-Database, Repository, Repository-
+    Browse.
+  * Fix day-of-week for changelog entry 0.22-1.
+
+  [ Martin ]
+  * Fix a SyntaxWarning
+  * Use /usr/bin/editor as fallback, not nano (Closes: #934545)
+
+ -- Martin <debacle@debian.org>  Wed, 01 Apr 2020 07:27:25 +0000
+
+quodlibet (4.2.1-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version (Closes: #913646)
+
+ -- W. Martin Borgert <debacle@debian.org>  Fri, 18 Jan 2019 23:35:07 +0000
+
+quodlibet (4.2.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 4.2.0 (Closes: #913135)
+
+ -- W. Martin Borgert <debacle@debian.org>  Wed, 07 Nov 2018 20:39:24 +0000
+
+quodlibet (4.1.0-1) unstable; urgency=medium
+
+  [ W. Martin Borgert ]
+  * Team upload
+
+  [Ondřej Nový]
+  * d/copyright: Use https protocol in Format field
+  * d/control: Set Vcs-* to salsa.debian.org
+
+  [Ondřej Kuzník]
+  * New upstream version 4.1.0 (Closes: #889027)
+  * Update copyright file
+
+ -- W. Martin Borgert <debacle@debian.org>  Thu, 14 Jun 2018 21:57:25 +0000
+
+quodlibet (3.9.1-1.2) unstable; urgency=medium
+
+  * Non-maintainer upload
+  * Depend on python-feedparser (Closes: #875492)
+
+ -- Ben Hutchings <ben@decadent.org.uk>  Fri, 20 Oct 2017 03:00:19 +0100
+
+quodlibet (3.9.1-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload
+  * Depend on python-concurrent.futures (Closes: #875634)
+
+ -- Ben Hutchings <ben@decadent.org.uk>  Thu, 05 Oct 2017 23:08:48 +0100
+
+quodlibet (3.9.1-1) unstable; urgency=medium
+
+  * New upstream release (closes: #862074).
+  * Bump Standards-Version to 4.0.0 (no changes).
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sun, 10 Sep 2017 15:45:11 +0200
+
+quodlibet (3.7.1-2) unstable; urgency=medium
+
+  [ Christoph Reiter ]
+  * Depend on mutagen >= 1.32 (closes: #807526)
+  * Recommend gir1.2-webkit2-4.0 (closes: #825771)
+  * Build depend on gtk-update-icon-cache instead of libgtk-3-bin
+    (closes: #825449)
+  * Change gir1.2-keybinder-3.0 from recommends to depends
+    (closes: #632854)
+  * Change gir1.2-soup-2.4 from recommends to depends and add version
+    (closes: #821295, #834771)
+  * Depend on gstreamer1.0-pulseaudio and gstreamer1.0-alsa
+    (closes: #785432, #777526, #823697)
+  * Remove python-cddb recommends, no longer needed since 3.6.0
+  * Replace python-musicbrainz2 recommends with
+    python-musicbrainzngs >= 0.5 (closes: #786357)
+
+  [ Tristan Seligmann ]
+  * Update watch file to point to readthedocs.io.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sat, 14 Jan 2017 11:23:07 +0200
+
+quodlibet (3.7.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Mon, 26 Dec 2016 14:04:23 +0200
+
+quodlibet (3.7.0-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Fri, 09 Sep 2016 19:37:56 +0200
+
+quodlibet (3.6.2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Bump Standards-Version to 3.9.8 (no changes).
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Thu, 23 Jun 2016 23:20:53 +0200
+
+quodlibet (3.6.1-2) unstable; urgency=medium
+
+  * Add missing dependency on gir1.2-soup-2.4 (closes: #820443).
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sat, 16 Apr 2016 05:41:04 +0200
+
+quodlibet (3.6.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Bump Standards-Version to 3.9.7 (no changes).
+  * Use https in Vcs-* fields.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Fri, 08 Apr 2016 02:59:00 +0200
+
+quodlibet (3.5.3-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sun, 24 Jan 2016 18:02:35 +0200
+
+quodlibet (3.5.1-2) unstable; urgency=medium
+
+  * Disable test suite, which was accidentally activated by changes
+    elsewhere (closes: #804587).
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Tue, 24 Nov 2015 23:52:51 +0200
+
+quodlibet (3.5.1-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Fri, 23 Oct 2015 21:38:46 +0200
+
+quodlibet (3.5.0-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Drop unnecessary versioned depends/build-depends.
+  * Update Vcs-Browser address.
+  * Update Homepage address.
+  * Drop menu files.
+  * Bump debhelper compat level to 9.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Tue, 13 Oct 2015 21:24:13 +0200
+
+quodlibet (3.4.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Add Suggests: gir1.2-gstreamer-1.0 for exfalso as this is required for
+    eg. the Replay Gain plugin to work (closes: #780960).
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Fri, 31 Jul 2015 09:12:01 +0200
+
+quodlibet (3.4.0-1) unstable; urgency=medium
+
+  * New upstream release, upload to unstable.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Fri, 01 May 2015 02:20:07 +0200
+
+quodlibet (3.3.1-1) experimental; urgency=low
+
+  * New upstream release.
+    - New upstream signing key (not used yet).
+  * Install upstream changelog.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Mon, 16 Mar 2015 07:46:41 +0200
+
+quodlibet (3.2.2-1) unstable; urgency=medium
+
+  * New upstream release (Closes: #763946).
+    - Fixed a problem where context menus would sometimes not show.
+  * Bump Standards-Version to 3.9.6.
+  * Check upstream signature in debian/watch.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sat, 04 Oct 2014 17:43:44 +0200
+
+quodlibet (3.2.1-1) unstable; urgency=low
+
+  [ Ondřej Kuzník ]
+  * Imported Upstream version 3.2.1 (Closes: #756837)
+  * Notable changes:
+    - quodlibet-plugins are now a part of the quodlibet release
+    - Play order plugins now split in random/non-random and UI adjusted
+    - Fixed tray icon crashing or not showing under Gnome Shell 3.12
+      (Closes: #755565, #701607)
+    - UDisks2 supported, in addition to UDisks1 (Closes: #740838)
+    - New MPD Server plugin to remote control QL
+    - New acoustid.org fingerprint tagger
+    - Exact rating plugin
+  * Update dependencies
+  * Install NEWS file and sphinx built documentation
+  * Use pybuild to prepare the packaged python files
+
+  [ Tristan Seligmann ]
+  * Fix some paragraphs in debian/copyright that were in the wrong order.
+  * Run dh_sphinxdoc during build.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sun, 28 Sep 2014 02:55:08 +0200
+
+quodlibet (3.1.2-1) unstable; urgency=low
+
+  [ Ondřej Kuzník ]
+  * Imported Upstream version 3.1.1
+  * Updated watch file.
+  * Notable changes:
+    - New commands for manipulating and extracting embedded images in operon
+    - Display patterns now support specifying the markup using square brackets
+  * Install operon as part of the exfalso package.
+  * Convert debian/copyright to the DEP-5 format
+  * Depend on audiosink the way banshee does since #694786 (Closes: #728093)
+  * Bump Standards-Version to 3.9.5 (no change).
+
+  [ Tristan Seligmann ]
+  * Fix changelog.
+  * Imported Upstream version 3.1.2
+  * Switch to canonical VCS URLs.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Mon, 28 Jul 2014 01:05:50 +0200
+
+quodlibet (3.0.2-3) unstable; urgency=low
+
+  * Properly depend on GTK-3.0 (Closes: #724065)
+
+ -- Ondřej Kuzník <ondra@mistotebe.net>  Fri, 27 Sep 2013 22:44:35 +0100
+
+quodlibet (3.0.2-2) unstable; urgency=low
+
+  [Tristan Seligmann]
+  * Add myself back to Uploaders.
+  * Remove unneeded build-dep on quilt.
+  * Install upstream NEWS file as changelog.
+
+  [Ondřej Kuzník]
+  * New upstream release 3.0.2 (Closes: #684989)
+  * Notable changes:
+    - Quodlibet has been ported to GTK+3
+    - New command line tagger: operon
+    - New browser: Album Collection
+    - Support for Monkey Audio, Ogg Opus, MIDI
+    - Save/restore queue position
+    - Fixed crash when re-adding devices while QL is running
+    - Fixed re-filtering of all open browsers if the search history changes
+    - Preferences UI for managing masked mount points
+    - Documentation now in Sphinx/reST
+  * Bump standards version to 3.9.4.
+  * Multimedia keys support with non-GNOME DEs needs keybinder-3.0 that is not
+    in unstable at the moment
+
+ -- Ondřej Kuzník <ondra@mistotebe.net>  Thu, 15 Aug 2013 22:12:07 +0100
+
+quodlibet (2.4-1) unstable; urgency=low
+
+  [ Ondrej Kuznik ]
+  * New upstream release 2.4
+  * Notable changes:
+    - Queue keyboard shortcut is now Ctrl+Return instead of Q
+    - Improved startup speed
+    - The paned browser is now the default one
+    - Tray icon appears in KDE panel again
+    - Close buttons in all dialogs
+    - New ~#filesize tag: requires library reload
+    - Improvements for the album and radio browser
+    - Better support for the language tag
+    - Ogg Theora tagging support
+    - xinelib 1.2 support
+    - Several updated translations.
+  * Bump Standards-Version to 3.9.3.1.
+
+ -- Ondřej Kuzník <ondra@mistotebe.net>  Thu, 31 May 2012 10:37:48 +0200
+
+quodlibet (2.3.2-1) unstable; urgency=low
+
+  * New upstream bugfix release 2.3.2
+  * Notable changes:
+    - Fixed hang with newer GStreamer versions.
+    - Fixed crash in album browser.
+    - Fixed "--print-playing <~#rating>".
+    - Fixed "--song-list".
+    - Several updated translations.
+  * Bump Standards-Version to 3.9.2.0.
+  * Incorporate suggestions from Christoph Reiter (thanks!)
+    - No longer recommend gstreamer0.10-gnomevfs.
+    - Recommend gstreamer0.10-audiosink as an alternative to gstreamer0.10-alsa.
+  * Move to dh_python2.
+    - Version the Recommends on quodlibet-plugins
+    - Get rid of the old Conflicts.
+  * Make myself the primary maintainer and remove Tristan from uploaders.
+
+ -- Ondřej Kuzník <ondra@mistotebe.net>  Thu, 20 Oct 2011 06:43:05 +0200
+
+quodlibet (2.3-1) unstable; urgency=low
+
+  * New upstream release 2.3 (Closes: #625880)
+  * Removed package quodlibet-ext.
+    - Drop python-all-dev build-dependency.
+  * Refreshed patch 40-no-po-update.
+  * Removed a dh_pysupport override.
+  * Suggest gstreamer0.10-gconf.
+
+ -- Ondřej Kuzník <ondra@mistotebe.net>  Thu, 05 May 2011 22:14:13 +0200
+
+quodlibet (2.2.99-1) unstable; urgency=low
+
+  * New upstream release 2.2.99 (Closes: #484689, #576836, #398322, #405289)
+  * Bump python-gtk2 dependency to 0.12.
+  * Notable changes:
+    - It's now possible to do complex searches without specifying tags to
+      search in.
+    - Playcount now increases after you have heard half of the song.
+    - Custom numeric tags now support floating point.
+    - All text entries support undo/redo actions.
+    - Support for text markup and the per entry pattern in the paned browser
+      can be customized.
+    - Drag and Drop support in the paned browser.
+    - Quodlibet now asks for a name if a new playlist gets created.
+    - The queue is now resizable.
+    - Several new translations.
+  * Suggest libmodplug1 instead of libmodplug0c2.
+  * Bump Standards-Version to 3.9.1.0
+
+
+ -- Ondřej Kuzník <ondra@mistotebe.net>  Tue, 15 Mar 2011 19:29:38 +0100
+
+quodlibet (2.2.1-1) unstable; urgency=low
+
+  * New upstream bugfix release 2.2.1
+  * Fixes release 2.2 regressions related to:
+    - Importing some mp3 files.
+    - Device backend (iPod, multi partition DAPs).
+    - Renaming keys with different values across files.
+  * Change priority of quodlibet-ext to extra.
+  * Remove 10-desktop-file-encoding.patch, now included upstream.
+
+ -- Ondřej Kuzník <ondra@mistotebe.net>  Fri, 02 Apr 2010 23:29:58 +0200
+
+quodlibet (2.2+debian-1) unstable; urgency=low
+
+  * Strip stray .py file from the upstream tarball instead of trying to get
+    rid of it later. (Closes: #570328)
+
+ -- Christine Spang <christine@debian.org>  Wed, 17 Feb 2010 17:54:55 -0500
+
+quodlibet (2.2-1) unstable; urgency=low
+
+  [ Ondřej Kuzník ]
+  * Add myself to uploaders.
+  * New upstream version (Closes: #564161)
+
+  [ Christine Spang ]
+  * Drop unnecessary dependencies: libgtk2.0-0 (pulled in by python-gtk2
+    anyway), python-pyvorbis (not used)
+  * Bump Standards-Version to 3.8.4.
+  * Build-depend on python-all-dev so we can support both python2.5 and
+    python2.6
+
+ -- Ondřej Kuzník <ondra@mistotebe.net>  Fri, 05 Feb 2010 06:49:33 +0100
+
+quodlibet (2.1.98-1) unstable; urgency=low
+
+  * New upstream release
+  * Drop libmp4v2 from exfalso's Suggests: as it is not actually used
+    by exfalso (Closes: #555559)
+  * Make myself the primary maintainer since Tristan has been inactive
+    for many months now.
+  * Lyrics downloading works with this release (Closes: #470926)
+  * Changing column widths no longer changes the widths
+    of all other columns (Closes: #405288)
+  * Queue is remembered even when quodlibet is closed (Closes: #533105)
+  * Recommend python-gpod and python-dbus since they are recommended
+    in quodlibet's README and most users will want them.
+  * Add a README.Debian noting a change in the configuration format
+    for the paned browser and how to fix it should your configuration
+    not work with this version.
+  * Solve upgrade problem. (Closes: #554676, #552775)
+
+ -- Christine Spang <christine@debian.org>  Mon, 04 Jan 2010 14:17:24 -0500
+
+quodlibet (2.1-4) unstable; urgency=low
+
+  * Install icons in {quodlibet,exfalso}.install, not in debian/rules.
+    (Closes: #552288)
+
+ -- Christine Spang <christine@debian.org>  Sun, 25 Oct 2009 11:20:02 -0400
+
+quodlibet (2.1-3) unstable; urgency=low
+
+  * Re-switch back to python-support, since most python packages
+    are converging on it, and since I've figured out what was
+    causing plugin problems last time around.
+  * Bump to Standards-Version 3.8.3
+  * Use python.mk to support python2.6's dist-packages directory.
+    (Closes: #547855)
+
+ -- Christine Spang <christine@debian.org>  Sat, 24 Oct 2009 17:56:14 -0400
+
+quodlibet (2.1-2) unstable; urgency=medium
+
+  * Fall back to python-central rather than python-support, since
+    python-support currently breaks this package. (Closes: #536739)
+
+ -- Christine Spang <christine@debian.org>  Tue, 14 Jul 2009 18:12:40 -0400
+
+quodlibet (2.1-1) unstable; urgency=low
+
+  * New Upstream Version (maintenance release)
+    * Bug fixes:
+      * Installer fixes [15, 27, 88]
+      * Right-click on menu causes crash [14]
+      * Removing a pane from the paned browser causes segfault [131]
+      * Null bytes in tags are now stripped on load [177, 242]
+      * zh_CN translation updated [156]
+    * Support .oga file extension for Ogg Vorbis files [52]
+    * Support libre.fm scrobbling in qlscrobbler plugin
+    * Get Internet Radio channel listing from yp.icecast.org [18]
+    * Ignore errors during playback for ~#skipcount [37]
+    * URIs supported for --play-file and --enqueue [17]
+    * Many minor fixes and enhancements.
+    * Don't use deprecated popen functions (Closes: #531628)
+  * Drop patches use-music-profile.patch; it's been integrated upstream.
+  * Drop install paths patch; it's no longer necessary.
+  * Migrate to debhelper 7 and python-support from cdbs and python-central.
+
+ -- Christine Spang <christine@debian.org>  Sun, 05 Jul 2009 07:59:28 -0400
+
+quodlibet (2.0-3) unstable; urgency=low
+
+  * Fix watch file.
+  * Don't create empty /usr/lib/quodlibet.
+  * Avoid installing empty site-packages dir in exfalso.
+  * Remove spurious libmpcdec3 dependency (closes: #476376).
+  * Switch to quilt for patches.
+  * Apply Ubuntu patch for selecting music profile.
+  * Update changelog.
+  * Set DEB_PYTHON_MODULE_PACKAGES and depend on cdbs 0.5.45.
+  * Bump Standards-Version; no changes required.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.net>  Sat, 28 Mar 2009 17:48:21 +0200
+
+quodlibet (2.0-2) unstable; urgency=low
+
+  * Upload to unstable now that Lenny has been released (woo!).
+
+ -- Christine Spang <christine@debian.org>  Mon, 16 Feb 2009 07:09:42 -0500
+
+quodlibet (2.0-1) experimental; urgency=low
+
+  * Add myself to Uploaders and upload to the 7-day delayed queue.
+  * New upstream release (closes: #494392). Thanks Bastian Kleineidam
+    <calvin@debian.org> for his work on packaging it.
+  * Drop 20-ellipsize-middle.patch and 30-lyricwiki.patch as they are now
+    upstream.
+  * Update 40-no-po-update.patch for new build system.
+  * We no longer need to modify the upstream tarball, drop README.Debian.
+  * Update to standards-version 3.8.0.
+  * Use compat level 7.
+  * Bump depends in debian/control based on the quodlibet website.
+  * Drop exfalso dependency on quodlibet-plugins.
+  * Change homepage to the new Google Code site.
+
+ -- Christine Spang <christine@debian.org>  Wed, 28 Jan 2009 16:02:26 -0500
+
+quodlibet (1.0.ds1-1) unstable; urgency=low
+
+  * Ship modified upstream tarball, removing insulting source code, and put a
+    note in README.Debian to explain why we're doing this (closes: #477454).
+  * Add Vcs-Darcs field.
+  * Add Homepage field.
+  * Update my e-mail address.
+  * Stop updating .po files during build.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.net>  Tue, 03 Jun 2008 22:39:49 +0200
+
+quodlibet (1.0-2) unstable; urgency=low
+
+  * Remove use of ${Source-Version}.
+  * Fix desktop files.
+    - Remove Application section.
+    - Add some other applicable sections, just for kicks.
+  * Fix menu files.
+    - s/Apps/Applications/
+  * Move python-ctypes to Suggests:, and also add libmodplug0c2.
+  * Use ELLIPSIZE_MIDDLE for song titles (closes: #443138).
+  * Use lyricwiki.org for lyrics downloading, instead of leoslyrics.com which
+    no longer works (closes: #446826). Patch from Ari Pollak <ari@debian.org>.
+  * Remove ${python:Depends} for quodlibet-ext, as this is meaningless.
+  * Bump Standards-Version.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Sat, 26 Jan 2008 03:46:55 +0200
+
+quodlibet (1.0-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Sat, 05 May 2007 17:38:41 +0200
+
+quodlibet (0.24-2) unstable; urgency=low
+
+  * New upstream release (closes: #414418).
+    - Charset handling fixes (closes: #394797).
+  * Add quodlibet-plugins dependency for quodlibet-ext, as the python modules
+    are required for those plugins to be operational (closes: #388020).
+  * Bump mutagen dependency.
+  * Remove dh_python invocations.
+  * Apply r4007 from upstream SVN, removing use of non-public dbus API
+    (closes: #419598).
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Mon, 23 Apr 2007 00:48:51 +0200
+
+quodlibet (0.23.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Go back to using the default version of python, as python2.4 is now
+    default in unstable.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Thu, 31 Aug 2006 14:58:50 +0200
+
+quodlibet (0.23-1) unstable; urgency=low
+
+  * New upstream release.
+    - Version number is correct (closes: #381393).
+  * Change dependencies to use python2.4-foo, as we are using a non-default
+    python version (closes: #367221).
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Fri, 18 Aug 2006 01:30:25 +0200
+
+quodlibet (0.22-2) unstable; urgency=low
+
+  * Fix build-deps: we need to depend on python2.4-dev now, not python-dev.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Mon, 24 Jul 2006 22:54:29 +0200
+
+quodlibet (0.22-1) unstable; urgency=low
+
+  * New upstream version.
+    - Python 2.4 is now required.
+    - New optional tray icon plugin; the plugin itself is included in
+      quodlibet-plugins from 20060713-1 onwards (closes: #356726).
+  * Add watch file.
+  * Install upstream changelog as changelog.gz (closes: #375437).
+    - Thanks to Bastian Kleineidam <calvin@debian.org> for the patch.
+  * Use correct clean target.
+  * Add libmpcdec3 dependency to exfalso.
+  * Bump python-mutagen dependency up to 1.4.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Sat, 15 Jul 2006 17:13:34 +0200
+
+quodlibet (0.21.1-1) unstable; urgency=low
+
+  * Adopt package.
+  * New upstream version.
+  * Change package to use CDBS and python-central, and new Python policy.
+  * Bump Standards-Version to 3.7.2 (no changes required).
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Sun, 25 Jun 2006 03:06:49 +0200
+
+quodlibet (0.21-1) unstable; urgency=low
+
+  * New upstream version.
+  * New Mutagen Ogg parser replaces invalid UTF-8. (Closes: #349694)
+
+ -- Joe Wreschnig <piman@debian.org>  Fri,  9 Jun 2006 21:46:40 -0500
+
+quodlibet (0.20.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Joe Wreschnig <piman@debian.org>  Tue,  2 May 2006 18:29:24 -0500
+
+quodlibet (0.20-1) unstable; urgency=low
+
+  * New upstream release.
+    * Song changes don't revert tag edits. (Closes: #363163)
+    * Paned Browser no longer adds incorrect entries. (Closes: #361131)
+
+ -- Joe Wreschnig <piman@debian.org>  Mon,  1 May 2006 16:31:19 -0500
+
+quodlibet (0.19.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Joe Wreschnig <piman@debian.org>  Tue,  4 Apr 2006 15:00:05 -0500
+
+quodlibet (0.19-1) unstable; urgency=low
+
+  * New upstream version.
+    * Implement {show,hide}-window. (Closes: #360238)
+    * Enter (almost as good as tab) to move the cursor. (Closes: #343974)
+  * debian/control, exfalso:
+    * Drop pymad dependency, depend on Mutagen 1.0.
+    * Conflict with old-style plugins.
+  * debian/rules: No need to remove mutagen, it's no longer present.
+
+ -- Joe Wreschnig <piman@debian.org>  Sat,  1 Apr 2006 00:15:30 -0600
+
+quodlibet (0.18-3) unstable; urgency=low
+
+  * Depend on gstreamer0.10-plugins-base (>= 0.10.3).
+
+ -- Joe Wreschnig <piman@debian.org>  Sun,  5 Mar 2006 19:47:06 -0600
+
+quodlibet (0.18-2) unstable; urgency=low
+
+  * Move required stock icons from quodlibet to exfalso.
+
+ -- Joe Wreschnig <piman@debian.org>  Fri,  3 Mar 2006 02:00:17 -0600
+
+quodlibet (0.18-1) unstable; urgency=low
+
+  * New upstream release.
+  * Depend on GStreamer 0.10.
+  * Split into quodlibet, exfalso packages. (Closes: #306882)
+  * Increase delay between library saves. (Closes: #349157)
+  * Configuration key to disable TreeViewHints. (Closes: #350593)
+  * Depend on the new external Mutagen package.
+  * Remove FAQ.html until it can be more easily updated.
+
+ -- Joe Wreschnig <piman@debian.org>  Fri, 03 Mar 2006 00:35:48 -0600
+
+quodlibet (0.17.1-2) unstable; urgency=low
+
+  * (Build-)Dep on pygtk >= 2.8. (Closes: #349057)
+
+ -- Joe Wreschnig <piman@debian.org>  Fri, 20 Jan 2006 14:11:33 -0600
+
+quodlibet (0.17.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Build-Dep on intltool.
+
+ -- Joe Wreschnig <piman@debian.org>  Thu, 19 Jan 2006 15:06:44 -0600
+
+quodlibet (0.17-1) unstable; urgency=low
+
+  * New upstream release.
+    * Plugin system for 'Edit Tags' dialog. (Closes: #343975)
+  * Build-Dep on debhelper >= 5.0.17 to avoid python-support.
+  * Drop dependency on pyflac.
+
+ -- Joe Wreschnig <piman@debian.org>  Tue, 17 Jan 2006 23:51:14 -0600
+
+quodlibet (0.16-2) unstable; urgency=low
+
+  * Recommend python-feedparser.
+
+ -- Joe Wreschnig <piman@debian.org>  Fri, 30 Dec 2005 12:06:38 -0600
+
+quodlibet (0.16-1) unstable; urgency=low
+
+  * Default to gstreamer0.8-alsa instead of gstreamer0.8-oss for a sink.
+  * Depend on ctypes, so things don't mysteriously stop working.
+  * Recommend, rather than suggest, MOD/FLAC/Musepack support, and plugins.
+  * Suggest faad, wavpack, libmp4v2 (not in Debian (yet)).
+  * Un-Suggest normalize-audio, vorbisgain, albumart-qt. quodlibet-plugins
+    should handle this.
+  * Install images and Python modules to /usr/share. (Closes: #340035)
+    * Conflict with quodlibet-plugins that use /usr/lib.
+  * Better GStreamer error checking. (Closes: #341623, thanks to Zack Weinberg)
+  * Stop/Pause import dialog when loading playlists. (Closes: #340345)
+  * Tray icon tooltip is configurable. (Closes: #341062)
+  * debian/compat: Level 5.
+  * Include FAQ.html from the website.
+
+ -- Joe Wreschnig <piman@debian.org>  Sun, 18 Dec 2005 20:56:49 -0600
+
+quodlibet (0.15-1) unstable; urgency=low
+
+  * New upstream release.
+    * Properly errors when no pipeline is found. (Closes: #337009)
+  * Depend on a gstreamer0.8-audiosink.
+
+ -- Joe Wreschnig <piman@debian.org>  Sun, 13 Nov 2005 19:12:15 -0600
+
+quodlibet (0.14-1) unstable; urgency=low
+
+  * New upstream release.
+  * Reset Python locale settings after gst.parse_launch. (Closes: #328587)
+
+ -- Joe Wreschnig <piman@debian.org>  Fri, 21 Oct 2005 19:46:22 -0500
+
+quodlibet (0.13.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Suggest quodlibet-plugins.
+
+ -- Joe Wreschnig <piman@debian.org>  Thu, 15 Sep 2005 00:11:44 -0500
+
+quodlibet (0.13-1) unstable; urgency=low
+
+  * New upstream release.
+  * This version only supports a GStreamer backend; depend/recommend
+    the appropriate GStreamer plugin packages.
+  * Remove ttf-freefont recommends, the single note is in many fonts.
+
+ -- Joe Wreschnig <piman@debian.org>  Sat, 03 Sep 2005 16:06:10 -0500
+
+quodlibet (0.12-1) unstable; urgency=low
+
+  * New upstream release:
+    * Use a new ID3 tag reader. (Closes: #307540)
+    * Escape filenames properly in warning dialogs. (Closes: #316659)
+    * Updated German translation. (Closes: #313814)
+  * Versioned dependency on PyGTK 2.6 (thanks to Rene Dudfield).
+  * quodlibet: Recommend current quodlibet-ext, conflict with others;
+    quodlibet-ext: Depend on current quodlibet. (Closes: #313216)
+  * Update URLs in copyright files.
+  * Standards-Version 3.6.2.
+
+ -- Joe Wreschnig <piman@debian.org>  Sat, 30 Jul 2005 22:23:12 -0500
+
+quodlibet (0.11-1) unstable; urgency=low
+
+  * New upstream release.
+  * gosd.py is no longer included; remove from quodlibet.copyright.
+
+ -- Joe Wreschnig <piman@debian.org>  Tue, 10 May 2005 00:29:13 -0500
+
+quodlibet (0.10.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Fix exfalso.1 symlink.
+
+ -- Joe Wreschnig <piman@debian.org>  Mon, 04 Apr 2005 12:23:41 -0500
+
+quodlibet (0.10-1) unstable; urgency=low
+
+  * New upstream release.
+  * Include a menu entry for Ex Falso.
+  * Rewrite long description.
+  * Recommend ttf-freefont; it seems to be the only font in Debian that
+    contains proper musical notes.
+
+ -- Joe Wreschnig <piman@debian.org>  Sun, 03 Apr 2005 11:55:01 -0500
+
+quodlibet (0.9-1) unstable; urgency=low
+
+  * New upstream release.
+  * Acknowledges CHARSET/G_BROKEN_FILENAMES. (Closes: #289782)
+  * Checks edge case of empty library. (Closes: #295668)
+  * Add dh_desktop call to debian/rules, bump debhelper Build-Dep.
+  * Remove circular dependency from quodlibet-ext.
+  * Rewrite long description.
+  * Depend on GTK 2.6.
+
+ -- Joe Wreschnig <piman@debian.org>  Fri, 04 Mar 2005 13:55:07 -0600
+
+quodlibet (0.8.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * getpreferredencoding() instead of getdefaultlocale()[1]. (Closes: #293834)
+
+ -- Joe Wreschnig <piman@debian.org>  Sun, 06 Feb 2005 13:04:28 -0600
+
+quodlibet (0.8-1) unstable; urgency=low
+
+  * Depends on PyGTK >= 2.4.1 (for use of combobox.set_model(None).
+  * modplug is no longer included; don't depend on it.
+  * Suggest python-flac, python-modplug, python-musepack.
+  * Recommend pyao.
+  * Removed versioned Build-Dep on python-dev, new mmkeys/statusicon
+    builds autodetect Python version using distutils.
+
+ -- Joe Wreschnig <piman@debian.org>  Thu, 03 Feb 2005 19:36:16 -0600
+
+quodlibet (0.7-2) unstable; urgency=low
+
+  * Include -fPIC when building shared libraries. (Closes: #289927)
+
+ -- Joe Wreschnig <piman@debian.org>  Tue, 11 Jan 2005 17:06:46 -0600
+
+quodlibet (0.7-1) unstable; urgency=low
+
+  * Upload to the Debian archive. (Closes: #285707)
+  * New upstream release.
+  * Split package into arch: all (quodlibet) and arch: any (quodlibet-ext)
+    components.
+
+ -- Joe Wreschnig <piman@debian.org>  Fri, 17 Dec 2004 18:41:59 -0600
+
+quodlibet (0.6-1) unstable; urgency=low
+
+  * Build-Depend on libmodplug-dev.
+  * New upstream release.
+
+ -- Joe Wreschnig <piman@sacredchao.net>  Thu, 02 Dec 2004 00:59:14 -0600
+
+quodlibet (0.5-1) unstable; urgency=low
+
+  * New release.
+
+ -- Joe Wreschnig <piman@sacredchao.net>  Thu, 18 Nov 2004 00:04:27 -0600
+
+quodlibet (0.4-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Joe Wreschnig <piman@sacredchao.net>  Mon,  8 Nov 2004 15:52:09 -0600
