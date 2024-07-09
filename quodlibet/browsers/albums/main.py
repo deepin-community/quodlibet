@@ -1,6 +1,6 @@
 # Copyright 2004-2007 Joe Wreschnig, Michael Urman, Iñigo Serna
 #           2009-2010 Steven Robertson
-#           2012-2020 Nick Boultbee
+#           2012-2022 Nick Boultbee
 #           2009-2014 Christoph Reiter
 #           2018-2020 Uriel Zajaczkovski
 #           2019      Ruud van Asseldonk
@@ -13,38 +13,39 @@
 from __future__ import absolute_import
 
 import os
+from typing import Optional
 
+import cairo
 from gi.repository import Gtk, Pango, Gdk, GLib, Gio
 
-from quodlibet.util.i18n import numeric_phrase
-from .prefs import Preferences, DEFAULT_PATTERN_TEXT
-from .models import AlbumModel, AlbumFilterModel, AlbumSortModel, AlbumItem
-
 import quodlibet
+from quodlibet import _
 from quodlibet import app
-from quodlibet import ngettext
 from quodlibet import config
+from quodlibet import ngettext
 from quodlibet import qltk
 from quodlibet import util
-from quodlibet import _
 from quodlibet.browsers import Browser
-from quodlibet.query import Query
 from quodlibet.browsers._base import DisplayPatternMixin
-from quodlibet.qltk.completion import EntryWordCompletion
-from quodlibet.qltk.information import Information
-from quodlibet.qltk.properties import SongProperties
-from quodlibet.qltk.songsmenu import SongsMenu
-from quodlibet.qltk.views import AllTreeView
-from quodlibet.qltk.x import MenuItem, Align, ScrolledWindow, RadioMenuItem
-from quodlibet.qltk.x import SymbolicIconImage
-from quodlibet.qltk.searchbar import SearchBarBox
-from quodlibet.qltk.menubutton import MenuButton
 from quodlibet.qltk import Icons
-from quodlibet.util import copool, connect_destroy, cmp
-from quodlibet.util.library import background_filter
-from quodlibet.util import connect_obj, DeferredSignal
+from quodlibet.qltk.completion import EntryWordCompletion
 from quodlibet.qltk.cover import get_no_cover_pixbuf
 from quodlibet.qltk.image import add_border_widget, get_surface_for_pixbuf
+from quodlibet.qltk.information import Information
+from quodlibet.qltk.menubutton import MenuButton
+from quodlibet.qltk.properties import SongProperties
+from quodlibet.qltk.searchbar import SearchBarBox
+from quodlibet.qltk.songsmenu import SongsMenu
+from quodlibet.qltk.views import AllTreeView
+from quodlibet.qltk.x import MenuItem, ScrolledWindow, RadioMenuItem
+from quodlibet.qltk.x import SymbolicIconImage
+from quodlibet.query import Query
+from quodlibet.util import connect_obj, DeferredSignal
+from quodlibet.util import copool, connect_destroy, cmp
+from quodlibet.util.i18n import numeric_phrase
+from quodlibet.util.library import background_filter
+from .models import AlbumModel, AlbumFilterModel, AlbumSortModel, AlbumItem
+from .prefs import Preferences, DEFAULT_PATTERN_TEXT
 
 
 def get_cover_size():
@@ -97,7 +98,7 @@ def compare_title(a1, a2):
             cmp(a1.key, a2.key))
 
 
-def compare_artist(a1, a2):
+def compare_people(a1, a2):
     a1, a2 = a1.album, a2.album
     if a1 is None:
         return -1
@@ -220,19 +221,18 @@ class PreferencesButton(Gtk.HBox):
 
         sort_orders = [
             (_("_Title"), self.__compare_title),
-            (_("_Artist"), self.__compare_artist),
+            (_("_People"), self.__compare_people),
             (_("_Date"), self.__compare_date),
             (_("_Date Added"), self.__compare_date_added),
             (_("_Original Date"), self.__compare_original_date),
             (_("_Genre"), self.__compare_genre),
             (_("_Rating"), self.__compare_rating),
-            (_("_Playcount"), self.__compare_avgplaycount),
+            (_("Play_count"), self.__compare_avgplaycount),
         ]
 
         menu = Gtk.Menu()
 
-        sort_item = Gtk.MenuItem(
-            label=_(u"Sort _by…"), use_underline=True)
+        sort_item = Gtk.MenuItem(label=_(u"Sort _by…"), use_underline=True)
         sort_menu = Gtk.Menu()
 
         active = config.getint('browsers', 'album_sort', 1)
@@ -263,7 +263,7 @@ class PreferencesButton(Gtk.HBox):
                 SymbolicIconImage(Icons.EMBLEM_SYSTEM, Gtk.IconSize.MENU),
                 arrow=True)
         button.set_menu(menu)
-        self.pack_start(button, True, True, 0)
+        self.pack_start(button, False, False, 0)
 
     def __sort_toggled_cb(self, item, model, num):
         if item.get_active():
@@ -274,9 +274,9 @@ class PreferencesButton(Gtk.HBox):
         a1, a2 = model.get_value(i1), model.get_value(i2)
         return compare_title(a1, a2)
 
-    def __compare_artist(self, model, i1, i2, data):
+    def __compare_people(self, model, i1, i2, data):
         a1, a2 = model.get_value(i1), model.get_value(i2)
-        return compare_artist(a1, a2)
+        return compare_people(a1, a2)
 
     def __compare_date(self, model, i1, i2, data):
         a1, a2 = model.get_value(i1), model.get_value(i2)
@@ -463,9 +463,8 @@ class AlbumList(Browser, util.InstanceTracker, VisibleUpdate,
             for column in albumlist.view.get_columns():
                 column.queue_resize()
 
-    @classmethod
-    def refresh_all(cls):
-        cls.__model.refresh_all()
+    def refresh_all(self):
+        self.__model.refresh_all()
 
     @classmethod
     def _init_model(klass, library):
@@ -473,12 +472,14 @@ class AlbumList(Browser, util.InstanceTracker, VisibleUpdate,
         klass.__library = library
 
     @util.cached_property
-    def _no_cover(self):
+    def _no_cover(self) -> Optional[cairo.Surface]:
         """Returns a cairo surface representing a missing cover"""
 
         cover_size = get_cover_size()
         scale_factor = self.get_scale_factor()
         pb = get_no_cover_pixbuf(cover_size, cover_size, scale_factor)
+        if not pb:
+            raise IOError("Can't find / scale missing art image")
         return get_surface_for_pixbuf(self, pb)
 
     def __init__(self, library):
@@ -518,7 +519,7 @@ class AlbumList(Browser, util.InstanceTracker, VisibleUpdate,
             elif item.cover:
                 pixbuf = item.cover
                 pixbuf = add_border_widget(pixbuf, self.view)
-                surface = get_surface_for_pixbuf(self, pixbuf)
+                surface = get_surface_for_pixbuf(self, pixbuf) or no_cover
                 # don't cache, too much state has an effect on the result
                 self.__last_render_surface = None
             else:
@@ -542,7 +543,7 @@ class AlbumList(Browser, util.InstanceTracker, VisibleUpdate,
             album = model.get_album(iter_)
 
             if album is None:
-                text = "<b>%s</b>\n" % _("All Albums")
+                text = util.bold(_("All Albums")) + "\n"
                 text += numeric_phrase("%d album", "%d albums", len(model) - 1)
                 markup = text
             else:
@@ -587,7 +588,9 @@ class AlbumList(Browser, util.InstanceTracker, VisibleUpdate,
 
         prefs = PreferencesButton(self, model_sort)
         search.pack_start(prefs, False, True, 0)
-        self.pack_start(Align(search, left=6, top=6), False, True, 0)
+        hb = Gtk.Box(spacing=3)
+        hb.pack_start(search, True, True, 6)
+        self.pack_start(hb, False, True, 0)
         self.pack_start(sw, True, True, 0)
 
         self.connect("destroy", self.__destroy)
@@ -880,7 +883,7 @@ class AlbumList(Browser, util.InstanceTracker, VisibleUpdate,
         albums = model.get_albums(paths)
 
         confval = "\n".join((a.str_key for a in albums))
-        # ConfigParser strips a trailing \n so we move it to the front
+        # ConfigParser strips a trailing \n - so we move it to the front
         if confval and confval[-1] == "\n":
             confval = "\n" + confval[:-1]
         return confval

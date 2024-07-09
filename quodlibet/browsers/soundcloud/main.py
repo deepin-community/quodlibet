@@ -1,4 +1,4 @@
-# Copyright 2016 Nick Boultbee
+# Copyright 2016-2022 Nick Boultbee
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@ from quodlibet.browsers import Browser
 from quodlibet.qltk import Icons, Message
 from quodlibet.qltk.completion import LibraryTagCompletion
 from quodlibet.qltk.searchbar import SearchBarBox
+from quodlibet.qltk.songsmenu import SongsMenu
 from quodlibet.qltk.views import RCMHintedTreeView
 from quodlibet.qltk.x import Align, ScrolledWindow, WebImage
 from quodlibet.util import connect_destroy, DeferredSignal, website, enum, \
@@ -93,12 +94,12 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
         self.view.get_selection().handler_unblock(self.__changed_sig)
 
     def __destroy(self, *args):
-        self.api_client.disconnect(self.__auth_sig)
+        print_d(f"Destroying Soundcloud Browser {self}")
         if not self.instances():
             self._destroy()
 
     def __init__(self, library):
-        print_d("Creating Soundcloud Browser")
+        print_d(f"Creating Soundcloud Browser {self}")
         super().__init__(spacing=12)
         self.set_orientation(Gtk.Orientation.VERTICAL)
 
@@ -108,16 +109,15 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
 
         self.connect('destroy', self.__destroy)
         self.connect('uri-received', self.__handle_incoming_uri)
-        self.__auth_sig = self.api_client.connect('authenticated',
-                                                  self.__on_authenticated)
+        connect_destroy(self.api_client, 'authenticated', self.__on_authenticated)
         connect_destroy(self.library, 'changed', self.__changed)
         self.login_state = (State.LOGGED_IN if self.online
                             else State.LOGGED_OUT)
         self._create_searchbar(self.library)
         vbox = Gtk.VBox()
-        vbox.pack_start(self._create_footer(), False, False, 6)
+        vbox.pack_start(self._create_header(), False, False, 0)
         vbox.pack_start(self._create_category_widget(), True, True, 0)
-        vbox.pack_start(self.create_login_button(), False, False, 6)
+        vbox.pack_start(self.create_login_button(), False, False, 0)
         vbox.show()
         pane = qltk.ConfigRHPaned("browsers", "soundcloud_pos", 0.4)
         pane.show()
@@ -129,16 +129,18 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
         self.pack_start(pane, True, True, 0)
         self.show()
 
+    def Menu(self, songs, library, items):
+        return SongsMenu(library, songs, edit=False, download=True, items=items)
+
     @property
     def online(self):
         return self.api_client.online
 
-    def _create_footer(self):
+    def _create_header(self):
         hbox = Gtk.HBox()
-        button = Gtk.Button(always_show_image=True,
-                            relief=Gtk.ReliefStyle.NONE)
+        button = Gtk.Button(always_show_image=True, relief=Gtk.ReliefStyle.NONE)
         button.connect('clicked', lambda _: website(SITE_URL))
-        button.set_tooltip_text(_("Go to %s" % SITE_URL))
+        button.set_tooltip_text(_("Go to %s") % SITE_URL)
         button.add(self._logo_image)
         hbox.pack_start(button, True, True, 6)
         hbox.show_all()
@@ -158,7 +160,7 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
             qltk.get_top_parent(widget).songlist.grab_focus()
         search.connect('focus-out', focus)
 
-        self._searchbox = Align(search, left=0, right=6, top=6)
+        self._searchbox = Align(search, left=0, right=6, top=0)
         self._searchbox.show_all()
 
     def update_connect_button(self):
@@ -196,7 +198,7 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
                 if value:
                     self.login_state = State.LOGGED_IN
                     print_d("Got a user token value of '%s'" % value)
-                    self.api_client.get_token(value)
+                    self.api_client.get_tokens(value)
             elif state == State.LOGGED_OUT:
                 self.api_client.authenticate_user()
                 self.login_state = State.LOGGING_IN
@@ -303,14 +305,14 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
         container.remove(self)
 
     def __changed(self, library, songs):
-        print_d("Updating view")
+        print_d(f"Updating view for {len(songs)} song(s)")
         self.activate()
 
     def __query_changed(self, bar, text, restore=False):
         try:
             self.__filter = SoundcloudQuery(text, self.STAR)
-            self.library.query_with_refresh(text)
-        except SoundcloudQuery.error as e:
+            self.library.query_with_refresh(self.__filter)
+        except SoundcloudQuery.Error as e:
             print_d("Couldn't parse query: %s" % e)
         else:
             print_d("Got terms from query: %s" % (self.__filter.terms,))
@@ -361,8 +363,7 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
                 search_it = it
             elif ((typ == FilterType.FAVORITES and text == "#(rating = 1.0)")
                     or (typ == FilterType.MINE and
-                         text == "soundcloud_user_id=%s"
-                         % self.api_client.user_id)):
+                        text == f"soundcloud_user_id={self.api_client.user_id}")):
                 self.view.get_selection().select_iter(it)
                 selected = True
                 break
@@ -431,7 +432,7 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
                 print_w("Malformed response in callback URI: %s" % uri)
                 return
             print_d("Processing Soundcloud callback (%s)" % (uri,))
-            self.api_client.get_token(code)
+            self.api_client.get_tokens(code)
         else:
             print_w("Unknown URL format (%s)" % (uri,))
 
@@ -439,9 +440,9 @@ class SoundcloudBrowser(Browser, util.InstanceTracker):
         name = data.username
         self.login_state = State.LOGGED_IN
         self.update_connect_button()
-        self._refresh_online_filters()
+        self.activate()
         msg = Message(Gtk.MessageType.INFO, app.window, _("Connected"),
-                      _("Quod Libet is now connected, <b>%s</b>!") % name)
+                      _("Quod Libet is now connected, %s!") % name)
         msg.run()
 
     @cached_property

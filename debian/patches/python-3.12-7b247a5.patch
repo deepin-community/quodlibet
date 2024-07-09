@@ -1,0 +1,28 @@
+Description: [PATCH] Fix titlecase plugin not being loaded
+Author:      Christoph Reiter <reiter.christoph@gmail.com>
+Origin:      https://github.com/quodlibet/quodlibet/commit/7b247a5e0c39006c089efd38ca37e80b527baa23
+Bug-Ubuntu:  https://bugs.launchpad.net/bugs/2056101
+Forwarded:   not-needed
+Last-Update: 2024-03-19
+
+Regression from #4358
+
+Don't use the wrong spec to load the plugin, otherwise the first
+loaded plugin will just be a namespace package and its content
+will be ignored.
+
+diff --git a/quodlibet/util/importhelper.py b/quodlibet/util/importhelper.py
+index 7a5b28689e..5075c3ffea 100644
+--- a/quodlibet/util/importhelper.py
++++ b/quodlibet/util/importhelper.py
+@@ -98,8 +98,8 @@ def load_module(name, package, path):
+ 
+     # modules need a parent package
+     if package not in sys.modules:
+-        spec = importlib.machinery.ModuleSpec(package, None, is_package=True)
+-        sys.modules[package] = importlib.util.module_from_spec(spec)
++        parent_spec = importlib.machinery.ModuleSpec(package, None, is_package=True)
++        sys.modules[package] = importlib.util.module_from_spec(parent_spec)
+ 
+     mod = spec.loader.load_module(fullname)
+ 

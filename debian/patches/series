@@ -1,2 +1,4 @@
 use-editor-not-nano.patch
 remove-reference-to-online-css.patch
+python-3.12-a8b6f6b.patch
+python-3.12-7b247a5.patch

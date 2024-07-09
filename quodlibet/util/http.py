@@ -1,5 +1,5 @@
 # Copyright 2013 Simonas Kazlauskas
-#        2016-20 Nick Boultbee
+#        2016-22 Nick Boultbee
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -7,8 +7,7 @@
 # (at your option) any later version.
 
 import json
-from collections import Callable
-from typing import Optional, Any
+from typing import Optional, Any, Callable
 
 from gi.repository import Soup, Gio, GLib, GObject
 from gi.repository.GObject import ParamFlags, SignalFlags
@@ -60,30 +59,30 @@ class HTTPRequest(GObject.Object):
 
         # For simple access
         self._receive_started = False
-        self._uri = self.message.get_uri().to_string(False)
+        self._uri = self.message.get_uri().to_string()
 
     def send(self):
         """
         Send the request and receive HTTP headers. Some of the body might
         get downloaded too.
         """
-        session.send_async(self.message, self.cancellable, self._sent, None)
+        session.send_async(self.message, 1, self.cancellable, self._sent, None)
 
     def _sent(self, session, task, data):
         try:
             status = int(self.message.get_property('status-code'))
             if status >= 400:
                 msg = 'HTTP {0} error in {1} request to {2}'.format(
-                    status, self.message.method, self._uri)
+                    status, self.message.get_method(), self._uri)
                 print_w(msg)
                 return self.emit('send-failure', Exception(msg))
             self.istream = session.send_finish(task)
             print_d('Got HTTP {code} on {method} request to {uri}.'.format(
-                uri=self._uri, code=status, method=self.message.method))
+                uri=self._uri, code=status, method=self.message.get_method()))
             self.emit('sent', self.message)
         except GLib.GError as e:
             print_w('Failed sending {method} request to {uri} ({err})'.format(
-                method=self.message.method, uri=self._uri, err=e))
+                method=self.message.get_method(), uri=self._uri, err=e))
             self.emit('send-failure', e)
 
     def provide_target(self, stream):
@@ -115,8 +114,6 @@ class HTTPRequest(GObject.Object):
         if self.istream and not self._receive_started:
             if not self.istream.is_closed():
                 self.istream.close(None)
-        else:
-            session.cancel_message(self.message, Soup.Status.CANCELLED)
 
     def receive(self):
         """
@@ -157,9 +154,12 @@ class HTTPRequest(GObject.Object):
                                   self.cancellable, spliced, None)
 
 
-def download(message: Any, cancellable: Gio.Cancellable, callback: Callable,
-             data, try_decode: bool = False,
-             failure_callback: Optional[Callable] = None):
+FailureCallback = Callable[[HTTPRequest, Exception, Any], None]
+
+
+def download(message: Soup.Message, cancellable: Gio.Cancellable, callback: Callable,
+             data: Any, try_decode: bool = False,
+             failure_callback: Optional[FailureCallback] = None):
     def received(request, ostream):
         ostream.close(None)
         bs = ostream.steal_as_bytes().get_data()
@@ -183,17 +183,20 @@ def download(message: Any, cancellable: Gio.Cancellable, callback: Callable,
     request.connect('received', received)
     request.connect('sent', lambda r, m: r.receive())
     if failure_callback:
-        request.connect('send-failure', failure_callback)
+        request.connect('send-failure', failure_callback, data)
     request.send()
 
 
-def download_json(message, cancellable, callback, data):
+def download_json(message: Soup.Message, cancellable: Gio.Cancellable,
+                  callback: Callable, data: Any,
+                  failure_callback: Optional[FailureCallback] = None):
     def cb(message, result, d):
         try:
             callback(message, json.loads(result), data)
         except ValueError:
             callback(message, None, data)
-    download(message, cancellable, cb, None, True)
+
+    download(message, cancellable, cb, None, True, failure_callback=failure_callback)
 
 
 session = Soup.Session()

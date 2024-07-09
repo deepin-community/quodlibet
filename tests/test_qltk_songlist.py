@@ -2,19 +2,19 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
+from typing import List, Set
 
 from gi.repository import Gtk
 
-from quodlibet.qltk.songlistcolumns import SongListColumn
-from senf import fsnative
-
-from tests import TestCase
-
-from quodlibet.library import SongLibrary
+from quodlibet import config
+from quodlibet.browsers.tracks import TrackList
+from quodlibet.formats import AudioFile
+from quodlibet.library import SongFileLibrary, SongLibrarian
 from quodlibet.qltk.songlist import (SongList, set_columns, get_columns,
                                      header_tag_split, get_sort_tag)
-from quodlibet.formats import AudioFile
-from quodlibet import config
+from quodlibet.qltk.songlistcolumns import SongListColumn
+from senf import fsnative
+from tests import TestCase, run_gtk_loop
 
 
 class TSongList(TestCase):
@@ -23,14 +23,23 @@ class TSongList(TestCase):
 
     def setUp(self):
         config.init()
-        self.songlist = SongList(SongLibrary())
+        self.lib = SongFileLibrary()
+        self.songlist = SongList(self.lib)
+        assert not self.lib.librarian, "not expecting a librarian - leaky test?"
 
         self.orders_changed = 0
+        self.songs_removed: List[Set] = []
 
         def orders_changed_cb(*args):
             self.orders_changed += 1
 
-        self.songlist.connect("orders-changed", orders_changed_cb)
+        def orders_removed_cb(songlist, removed):
+            self.songs_removed.append(removed)
+
+        self.__sigs = [
+            self.songlist.connect("orders-changed", orders_changed_cb),
+            self.songlist.connect("songs-removed", orders_removed_cb)
+        ]
 
     def test_set_all_column_headers(self):
         SongList.set_all_column_headers(self.HEADERS)
@@ -94,12 +103,22 @@ class TSongList(TestCase):
         self.assertFalse(s.get_sort_orders())
 
     def test_not_sortable(self):
+        config.set("song_list", "always_allow_sorting", False)
         s = self.songlist
         s.sortable = False
         s.set_column_headers(["foo"])
         s.toggle_column_sort(s.get_columns()[0])
-        self.assertEqual(self.orders_changed, 0)
-        self.assertFalse(s.get_sort_orders())
+        assert self.orders_changed == 0
+        assert not s.get_sort_orders()
+
+    def test_sortable_if_config_overrides(self):
+        config.set("song_list", "always_allow_sorting", True)
+        s = self.songlist
+        s.sortable = False
+        assert s.sortable
+        s.set_column_headers(["foo"])
+        s.toggle_column_sort(s.get_columns()[0])
+        assert s.get_sort_orders()
 
     def test_find_default_sort_column(self):
         s = self.songlist
@@ -171,17 +190,28 @@ class TSongList(TestCase):
 
         self.assertEqual(self.songlist.get_songs(), [song] * 4)
 
-    def test_header_menu(self):
-        from quodlibet import browsers
-        from quodlibet.library import SongLibrary, SongLibrarian
+    def test_remove_songs(self):
+        song = AudioFile({"~filename": "/dev/null"})
+        song.sanitize()
+        self.lib.add([song])
+        assert song in self.lib, "Broken library?"
+        self.songlist.add_songs([song])
+        assert set(self.songlist.get_songs()) == {song}
+        self.lib.remove([song])
+        assert not list(self.lib), "Didn't get removed"
+        run_gtk_loop()
+        assert self.songs_removed == [{song}], f"Signal not emitted: {self.__sigs}"
 
+    def test_header_menu(self):
         song = AudioFile({"~filename": fsnative(u"/dev/null")})
         song.sanitize()
         self.songlist.set_songs([song])
 
-        library = SongLibrary()
-        library.librarian = SongLibrarian()
-        browser = browsers.get("SearchBar")(library)
+        library = self.lib
+        librarian = SongLibrarian()
+        librarian.register(self.lib, "test")
+        self.lib.librarian = librarian
+        browser = TrackList(library)
 
         self.songlist.set_column_headers(["foo"])
 
@@ -189,6 +219,8 @@ class TSongList(TestCase):
         sel = self.songlist.get_selection()
         sel.select_all()
         self.assertTrue(self.songlist.Menu("foo", browser, library))
+        librarian.destroy()
+        self.lib.librarian = None
 
     def test_get_columns_migrated(self):
         self.failIf(config.get("settings", "headers", None))
@@ -239,5 +271,8 @@ class TSongList(TestCase):
         assert {"Title", "Genre", "Comment", "Artist"} < names
 
     def tearDown(self):
+        for sig in self.__sigs:
+            self.songlist.disconnect(sig)
         self.songlist.destroy()
+        self.lib.destroy()
         config.quit()

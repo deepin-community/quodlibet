@@ -95,9 +95,8 @@ CONFIG = Config()
 
 class ExportToFolder(PlaylistPlugin):
     PLUGIN_ID = "ExportToFolder"
-    PLUGIN_NAME = _(u"Export Playlist to Folder")
-    PLUGIN_DESC = \
-        _("Exports a playlist by copying files to a folder.")
+    PLUGIN_NAME = _("Export Playlist to Folder")
+    PLUGIN_DESC = _("Exports a playlist by copying files to a folder.")
     PLUGIN_ICON = Icons.FOLDER
     REQUIRES_ACTION = True
 
@@ -153,7 +152,7 @@ class ExportToFolder(PlaylistPlugin):
         dialog.destroy()
 
     @classmethod
-    def PluginPreferences(self, parent):
+    def PluginPreferences(cls, parent):
         def changed(entry):
             CONFIG.default_pattern = entry.get_text()
 

@@ -13,10 +13,11 @@
 
 import os
 import re
+from collections import OrderedDict
 from re import Scanner  # type: ignore
 from urllib.parse import quote_plus
 
-from senf import sep, fsnative, expanduser
+from senf import fsnative
 
 from quodlibet import util
 from quodlibet.query import Query
@@ -361,14 +362,17 @@ class PatternCompiler:
         return text
 
 
-def Pattern(string, Kind=PatternFormatter, MAX_CACHE_SIZE=100, cache={}):
+def Pattern(string, Kind=PatternFormatter, MAX_CACHE_SIZE=100, cache=OrderedDict()):
     if (Kind, string) not in cache:
-        if len(cache) > MAX_CACHE_SIZE:
-            cache.clear()
+        while len(cache) >= MAX_CACHE_SIZE:
+            cache.popitem(last=False)
         comp = PatternCompiler(PatternParser(PatternLexer(string)))
         func, tags = comp.compile("comma", Kind._text)
         list_func, tags = comp.compile("list_separate", Kind._text)
         cache[(Kind, string)] = Kind(func, list_func, tags)
+    else:
+        # promote recently accessed items to front of cache
+        cache.move_to_end((Kind, string))
     return cache[(Kind, string)]
 
 
@@ -397,7 +401,7 @@ class _FileFromPattern(PatternFormatter):
 
     def _format(self, key, value):
         value = _number(key, value)
-        value = value.replace(sep, "_")
+        value = value.replace(os.sep, "_")
         value = value.replace(u"\uff0f", "_")
         value = value.strip()
         return value
@@ -418,10 +422,10 @@ class _FileFromPattern(PatternFormatter):
                 assert isinstance(value, str)
                 value = strip_win32_incompat_from_path(value)
 
-            value = expanduser(value)
+            value = os.path.expanduser(value)
             value = limit_path(value)
 
-            if sep in value and not os.path.isabs(value):
+            if os.sep in value and not os.path.isabs(value):
                 raise ValueError("Pattern is not rooted")
             return value
         else:
@@ -431,9 +435,8 @@ class _FileFromPattern(PatternFormatter):
 class _ArbitraryExtensionFileFromPattern(_FileFromPattern):
     """Allows filename-like output with extensions different from the song."""
 
-    def _post(self, value, song):
-        super_object = super(_ArbitraryExtensionFileFromPattern, self)
-        return super_object._post(value, song, False)
+    def _post(self, value, song, keep_extension=False):
+        return super()._post(value, song, keep_extension)
 
 
 class _XMLFromPattern(PatternFormatter):

@@ -4,12 +4,12 @@ data/io.github.quodlibet.QuodLibet.appdata.xml.in
 data/io.github.quodlibet.QuodLibet.desktop.in
 quodlibet/browsers/albums/main.py
 quodlibet/browsers/albums/prefs.py
-quodlibet/browsers/audiofeeds.py
 quodlibet/browsers/_base.py
 quodlibet/browsers/collection/main.py
 quodlibet/browsers/collection/models.py
 quodlibet/browsers/collection/prefs.py
 quodlibet/browsers/covergrid/main.py
+quodlibet/browsers/covergrid/models.py
 quodlibet/browsers/covergrid/prefs.py
 quodlibet/browsers/filesystem.py
 quodlibet/browsers/__init__.py
@@ -21,7 +21,9 @@ quodlibet/browsers/playlists/main.py
 quodlibet/browsers/playlists/menu.py
 quodlibet/browsers/playlists/prefs.py
 quodlibet/browsers/playlists/util.py
+quodlibet/browsers/podcasts.py
 quodlibet/browsers/tracks.py
+quodlibet/browsers/soundcloud/library.py
 quodlibet/browsers/soundcloud/main.py
 quodlibet/browsers/soundcloud/util.py
 quodlibet/cli.py
@@ -39,12 +41,12 @@ quodlibet/ext/events/advanced_preferences.py
 quodlibet/ext/events/animosd/main.py
 quodlibet/ext/events/animosd/prefs.py
 quodlibet/ext/events/appinfo.py
-quodlibet/ext/events/auto_library_update.py
 quodlibet/ext/events/auto_update_tags_in_files.py
 quodlibet/ext/events/automask.py
 quodlibet/ext/events/autorating.py
 quodlibet/ext/events/bansheeimport.py
 quodlibet/ext/events/clock.py
+quodlibet/ext/events/discord_status.py
 quodlibet/ext/events/equalizer.py
 quodlibet/ext/events/gajim_status.py
 quodlibet/ext/events/headphonemon.py
@@ -58,6 +60,7 @@ quodlibet/ext/events/mpris/__init__.py
 quodlibet/ext/events/mqtt.py
 quodlibet/ext/events/musicbrainzsync.py
 quodlibet/ext/events/notify.py
+quodlibet/ext/events/notify_bookmarks.py
 quodlibet/ext/events/qlscrobbler.py
 quodlibet/ext/events/radioadmute.py
 quodlibet/ext/events/randomalbum.py
@@ -67,6 +70,7 @@ quodlibet/ext/events/searchprovider.py
 quodlibet/ext/events/seekbar.py
 quodlibet/ext/events/seekpoints.py
 quodlibet/ext/events/squeezebox_sync.py
+quodlibet/ext/events/stop_on_pause.py
 quodlibet/ext/events/synchronize_to_device.py
 quodlibet/ext/events/synchronizedlyrics.py
 quodlibet/ext/events/telepathy_status.py
@@ -81,7 +85,6 @@ quodlibet/ext/events/trayicon/systemtray.py
 quodlibet/ext/events/viewlyrics.py
 quodlibet/ext/events/visualisations.py
 quodlibet/ext/events/waveformseekbar.py
-quodlibet/ext/events/weblyrics.py
 quodlibet/ext/events/write_cover.py
 quodlibet/ext/gstreamer/compressor.py
 quodlibet/ext/gstreamer/crossfeed.py
@@ -104,6 +107,7 @@ quodlibet/ext/query/conditional.py
 quodlibet/ext/query/missing.py
 quodlibet/ext/query/pythonexpression.py
 quodlibet/ext/query/savedsearch.py
+quodlibet/ext/query/unique.py
 quodlibet/ext/_shared/squeezebox/base.py
 quodlibet/ext/_shared/squeezebox/server.py
 quodlibet/ext/_shared/squeezebox/util.py
@@ -127,11 +131,9 @@ quodlibet/ext/songsmenu/fingerprint/submit.py
 quodlibet/ext/songsmenu/forcewrite.py
 quodlibet/ext/songsmenu/html.py
 quodlibet/ext/songsmenu/ifp.py
-quodlibet/ext/songsmenu/importexport.py
-quodlibet/ext/songsmenu/k3b.py
+quodlibet/ext/songsmenu/import_export_tags_and_track_user_data.py
 quodlibet/ext/songsmenu/lastfmsync.py
 quodlibet/ext/songsmenu/makesorttags.py
-quodlibet/ext/songsmenu/migratemetadata.py
 quodlibet/ext/songsmenu/playlist.py
 quodlibet/ext/songsmenu/refresh.py
 quodlibet/ext/songsmenu/replaygain.py
@@ -143,7 +145,11 @@ quodlibet/formats/_audio.py
 quodlibet/formats/__init__.py
 quodlibet/__init__.py
 quodlibet/library/__init__.py
-quodlibet/library/libraries.py
+quodlibet/library/album.py
+quodlibet/library/base.py
+quodlibet/library/file.py
+quodlibet/library/playlist.py
+quodlibet/library/song.py
 quodlibet/main.py
 quodlibet/operon/base.py
 quodlibet/operon/commands.py
@@ -159,8 +165,8 @@ quodlibet/player/gstbe/util.py
 quodlibet/player/__init__.py
 quodlibet/player/xinebe/player.py
 quodlibet/plugins/__init__.py
-quodlibet/plugins/listenbrainz/__init__.py
-quodlibet/plugins/listenbrainz/listenbrainz.py
+quodlibet/ext/events/listenbrainz/__init__.py
+quodlibet/ext/events/listenbrainz/listenbrainz.py
 quodlibet/plugins/playlist.py
 quodlibet/plugins/query.py
 quodlibet.py
@@ -172,6 +178,7 @@ quodlibet/qltk/chooser.py
 quodlibet/qltk/controls.py
 quodlibet/qltk/data_editors.py
 quodlibet/qltk/delete.py
+quodlibet/qltk/download.py
 quodlibet/qltk/edittags.py
 quodlibet/qltk/_editutils.py
 quodlibet/qltk/entry.py
@@ -182,6 +189,7 @@ quodlibet/qltk/info.py
 quodlibet/qltk/information.py
 quodlibet/qltk/lyrics.py
 quodlibet/qltk/maskedbox.py
+quodlibet/qltk/matchdialog.py
 quodlibet/qltk/msg.py
 quodlibet/qltk/notif.py
 quodlibet/qltk/playorder.py

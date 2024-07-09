@@ -1,5 +1,6 @@
 # Copyright (C) 2006 - Steve Frécinaux
 #            2016-17 - Nick Boultbee
+#               2021 - halfbrained@github
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,10 +19,10 @@
 # Copyright 2009,2010,2013 Christoph Reiter
 #                     2016 Nick Boultbee
 
-
 import sys
 import re
 import traceback
+from itertools import takewhile
 
 from gi.repository import Gtk, Pango, Gdk, GLib
 
@@ -45,8 +46,9 @@ class PyConsole(SongsMenuPlugin):
         desc = ngettext("%d song", "%d songs", len(songs)) % len(songs)
         win = ConsoleWindow(create_console(songs), title=desc)
         win.set_icon_name(self.PLUGIN_ICON)
-        win.set_title(_("{plugin_name} for {songs} ({app})").format(
-            plugin_name=self.PLUGIN_NAME, songs=desc, app=app.name))
+        win.set_title(
+            _("{plugin_name} for {songs} ({app})").format(
+                plugin_name=self.PLUGIN_NAME, songs=desc, app=app.name))
         win.show_all()
 
 
@@ -81,13 +83,13 @@ def create_console(songs=None):
                     "  %5s: Songs Collection",
                     "  %5s: Application instance"]) % (
                        "songs", "sdict", "files", "col", "app")
-
     dir_string = _("Your current working directory is:")
 
     console.eval("import mutagen", False)
     console.eval("import os", False)
-    console.eval("print(\"Python: %s / Quod Libet: %s\")" %
-                 (sys.version.split()[0], const.VERSION), False)
+    console.eval(
+        "print(\"Python: %s / Quod Libet: %s\")" %
+        (sys.version.split()[0], const.VERSION), False)
     console.eval("print(\"%s\")" % access_string, False)
     console.eval("print(\"%s \"+ os.getcwd())" % dir_string, False)
     return console
@@ -103,7 +105,8 @@ def namespace_for(song_wrappers):
         'files': files,
         'sdict': song_dicts,
         'col': collection,
-        'app': app}
+        'app': app
+    }
 
 
 class ConsoleWindow(Gtk.Window):
@@ -124,7 +127,8 @@ class PythonConsole(Gtk.ScrolledWindow):
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.set_shadow_type(Gtk.ShadowType.NONE)
         self.view = Gtk.TextView()
-        add_css(self, "* { background-color: white; padding: 6px; } ")
+        add_css(self, "scrolledwindow { padding: 6px; "
+                "background-color: white; background-color: @content_view_bg;}")
         self.view.modify_font(Pango.font_description_from_string('Monospace'))
         self.view.set_editable(True)
         self.view.set_wrap_mode(Gtk.WrapMode.CHAR)
@@ -170,8 +174,9 @@ class PythonConsole(Gtk.ScrolledWindow):
                         event_state == Gdk.ModifierType.CONTROL_MASK:
             self.destroy()
 
-        elif event.keyval == Gdk.KEY_Return and \
-                        event_state == Gdk.ModifierType.CONTROL_MASK:
+        elif event.keyval == Gdk.KEY_Return and (
+            event_state & (Gdk.ModifierType.CONTROL_MASK |
+                           Gdk.ModifierType.SHIFT_MASK)):
             # Get the command
             buffer = view.get_buffer()
             inp_mark = buffer.get_mark("input")
@@ -191,7 +196,9 @@ class PythonConsole(Gtk.ScrolledWindow):
             spaces = re.match(self.__spaces_pattern, line)
             if spaces is not None:
                 buffer.insert(cur, line[spaces.start():spaces.end()])
-                cur = buffer.get_end_iter()
+            else:
+                buffer.insert(cur, "    ")
+            cur = buffer.get_end_iter()
 
             buffer.place_cursor(cur)
             GLib.idle_add(self.scroll_to_end)
@@ -208,7 +215,6 @@ class PythonConsole(Gtk.ScrolledWindow):
             cur = buffer.get_end_iter()
             line = buffer.get_text(inp, cur, True)
             self.current_command = self.current_command + line + "\n"
-            self.history_add(line)
 
             # Make the line blue
             lin = buffer.get_iter_at_mark(lin_mark)
@@ -218,7 +224,7 @@ class PythonConsole(Gtk.ScrolledWindow):
             cur_strip = self.current_command.rstrip()
 
             if (cur_strip.endswith(":") or
-                (self.current_command[-2:] != "\n\n" and self.block_command)):
+                (self.current_command[-2:].strip() != "" and self.block_command)):
                 # Unfinished block command
                 self.block_command = True
                 com_mark = "... "
@@ -226,6 +232,7 @@ class PythonConsole(Gtk.ScrolledWindow):
                 com_mark = "... "
             else:
                 # Eval the command
+                self.history_add(cur_strip)
                 self.__run(self.current_command)
                 self.current_command = ''
                 self.block_command = False
@@ -235,6 +242,39 @@ class PythonConsole(Gtk.ScrolledWindow):
             cur = buffer.get_end_iter()
             buffer.move_mark(lin_mark, cur)
             buffer.insert(cur, com_mark)
+            cur = buffer.get_end_iter()
+            buffer.move_mark(inp_mark, cur)
+
+            # Keep indentation of preceding line
+            if com_mark == "... ":
+                spaces = re.match(self.__spaces_pattern, line)
+                if spaces is not None:
+                    #cur = buffer.get_end_iter()
+                    buffer.insert(cur, line[spaces.start():spaces.end()])
+                if cur_strip.endswith(":"):
+                    #cur = buffer.get_end_iter()
+                    buffer.insert(cur, "    ")
+
+            buffer.place_cursor(cur)
+            GLib.idle_add(self.scroll_to_end)
+            return True
+
+        elif (event.keyval == Gdk.KEY_c and
+              event_state == Gdk.ModifierType.CONTROL_MASK):
+            # Get the marks
+            buffer = view.get_buffer()
+            lin_mark = buffer.get_mark("input-line")
+            inp_mark = buffer.get_mark("input")
+            cur = buffer.get_end_iter()
+
+            # New line
+            buffer.insert(cur, "\n")
+            com_mark = ">>> "
+            cur = buffer.get_end_iter()
+            buffer.move_mark(lin_mark, cur)
+            buffer.insert(cur, com_mark)
+
+            # Move marks
             cur = buffer.get_end_iter()
             buffer.move_mark(inp_mark, cur)
             buffer.place_cursor(cur)
@@ -271,6 +311,74 @@ class PythonConsole(Gtk.ScrolledWindow):
                 buffer.move_mark_by_name("insert", inp)
             else:
                 buffer.place_cursor(inp)
+            return True
+
+        # completion - Tab, Shift+Tab, Ctrl+Space , Ctrl+Shift+Space
+        elif (event.keyval == Gdk.KEY_Tab or event.keyval == Gdk.KEY_ISO_Left_Tab) or (
+            event.keyval == Gdk.KEY_space
+            and (
+                event_state == (Gdk.ModifierType.CONTROL_MASK |
+                                Gdk.ModifierType.SHIFT_MASK)
+                or event_state == (Gdk.ModifierType.CONTROL_MASK)
+            )
+        ):
+            buffer = view.get_buffer()
+
+            # get string to left of caret  inside command text-line
+            _inp_mark = buffer.get_mark("input")
+            _ins_mark = buffer.get_mark("insert")
+            _inp = buffer.get_iter_at_mark(_inp_mark)
+            ins = buffer.get_iter_at_mark(_ins_mark)
+            cmd_start = buffer.get_text(_inp, ins, True)
+
+            # get identifiers chain string, e.g. `a.b.c`, or a single identifier
+            _identifiers_chars = takewhile(
+                lambda x: x.isalnum() or x in {'_', '.'}, reversed(cmd_start))
+            _idcs_len = len(
+                list(_identifiers_chars))  # lengt of identifiers chain string
+            ids_str = cmd_start[-_idcs_len:]
+
+            # Ctrl+Shift+Space: has Shift: include identifiers starting with '__'
+            is_shift = bool(event_state & Gdk.ModifierType.SHIFT_MASK)
+
+            comp_items = self.get_completion_items(ids_str,
+                                                   include_private=is_shift)
+
+            choice = None
+            if len(comp_items) > 1:
+                # sort completions: case-insensitive,
+                # items starting with '_' - at the end
+                comp_items.sort(
+                    key=lambda x: (x[0].startswith('_'), x[0].lower()))
+
+                dialog = ListChoiceDialog(self.get_parent(), comp_items)
+                choice = dialog.run()
+                dialog.destroy()
+            elif len(comp_items) == 1:
+                # if current text is only suggestion, add a '.' if object
+                # has properties visible to autosuggestion
+                last = ids_str.split('.')[-1]
+                if last == comp_items[0][0]:
+                    next_comp_items = self.get_completion_items(
+                        ids_str + '.',
+                        include_private=is_shift
+                    )
+                    if next_comp_items:
+                        buffer.insert(ins, '.')
+                else:
+                    choice = 0
+            elif '\n' in self.current_command:
+                # if we're doing multi-line editing, tab should add 4 spaces
+                buffer.insert(ins, "    ")
+
+            if isinstance(choice, int) and choice >= 0:
+                last = ids_str.split('.')[-1]
+                insert_text = comp_items[choice][0]
+                if last:  # cut off prefix, already present
+                    insert_text = insert_text[len(last):]
+
+                buffer.insert(ins, insert_text)
+
             return True
 
     def __mark_set_cb(self, buffer, iter, name):
@@ -330,10 +438,9 @@ class PythonConsole(Gtk.ScrolledWindow):
     def eval(self, command, display_command=False):
         buffer = self.view.get_buffer()
         lin = buffer.get_mark("input-line")
-        buffer.delete(buffer.get_iter_at_mark(lin),
-                      buffer.get_end_iter())
+        buffer.delete(buffer.get_iter_at_mark(lin), buffer.get_end_iter())
 
-        if isinstance(command, list) or isinstance(command, tuple):
+        if isinstance(command, (list, tuple)):
             for c in command:
                 if display_command:
                     self.write(">>> " + c + "\n", self.command)
@@ -370,11 +477,97 @@ class PythonConsole(Gtk.ScrolledWindow):
         sys.stdout, self.stdout = self.stdout, sys.stdout
         sys.stderr, self.stderr = self.stderr, sys.stderr
 
+    def get_completion_items(self, ids_str, include_private=False):
+        """ get completion suggestions
+            ids_str - identifiers chain string, e.g. `a.b.c`, or a single identifier
+        """
+        import inspect
+
+        def get_comp(obj, pre):
+            """ get completion item names from `obj`-object or `self.namespace`
+            with prefix `pre`
+            """
+            dir_result = dir(obj) if obj is not None else self.namespace
+
+            comp = []  # result: (completion-name, details)
+            for name in dir_result:
+                if (pre and not name.startswith(pre)) \
+                        or (not include_private and name.startswith('__')):
+                    continue
+
+                if obj is not None:
+                    try:
+                        f = getattr(obj, name)
+                    except:
+                        continue
+                else:
+                    f = self.namespace.get(name)
+
+                if not callable(f):
+                    comp.append((name, ''))
+                else:
+                    try:
+                        spec = inspect.getfullargspec(f)
+                    except TypeError:
+                        spec = None
+
+                    if spec:
+                        sargs = []
+                        arglen = len(spec.args) if spec.args else 0
+                        deflen = len(spec.defaults) if spec.defaults else 0
+                        noargs = arglen - deflen
+                        for i in range(arglen):
+                            if i == 0 and spec.args[i] == 'self':
+                                continue
+
+                            if i < noargs:
+                                sargs.append(spec.args[i])
+                            else:
+                                default_arg = repr(spec.defaults[i - noargs])
+                                sargs.append(spec.args[i] + '=' + default_arg)
+
+                        details = " ({})".format(", ".join(sargs))
+                        comp.append((name, details))
+                    else:
+                        comp.append((name, " ()"))
+            #end for
+
+            return comp
+
+        #end get_comp()
+
+        comp = None
+        # method, field
+        if '.' in ids_str:
+            spl = ids_str.split('.')
+
+            # search for target object
+            var = None
+            for fname in spl[:-1]:
+                if var is None:
+                    var = self.namespace.get(fname)
+                else:
+                    try:
+                        var = getattr(var, fname, None)
+                    except:
+                        pass
+
+                if var is None:
+                    break
+
+            if var is not None:
+                comp = get_comp(obj=var, pre=spl[-1])
+
+        # single var or empty
+        else:
+            comp = get_comp(obj=None, pre=ids_str)
+
+        return comp or []
+
 
 class OutFile:
     """A fake output file object. It sends output to a TK test widget,
     and if asked for a file number, returns one set on instance creation"""
-
     def __init__(self, console, tag):
         self.console = console
         self.tag = tag
@@ -413,3 +606,52 @@ class OutFile:
         raise IOError(29, 'Illegal seek')
 
     truncate = tell
+
+
+class ListChoiceDialog(Gtk.Dialog):
+    """ display listbox to choose an item from `rows` list,
+        returns index if the chosen item, if positive
+    """
+    def __init__(self, parent, rows):
+        Gtk.Dialog.__init__(self,
+                            title=_("Completion"),
+                            transient_for=parent,
+                            flags=0)
+        self.set_default_size(400, 250)
+
+        listbox = Gtk.ListBox()
+        listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+
+        for i, (name, details) in enumerate(rows):
+            row = Gtk.ListBoxRow()
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+            row.add(hbox)
+
+            lbl = Gtk.Label(label=name, xalign=0)
+            lbl2 = Gtk.Label(label=details, xalign=0)
+            hbox.pack_start(lbl, expand=False, fill=False, padding=0)
+            hbox.pack_start(lbl2, expand=True, fill=True, padding=0)
+
+            # dim the details-label
+            style = lbl2.get_style_context()
+            style.add_class('dim-label')
+            add_css(lbl2, ".dim-label { opacity: 0.5; } ")
+
+            listbox.add(row)
+
+            if i == 0:
+                listbox.set_focus_child(row)
+
+        listbox.connect('row-activated', self.on_row_click)
+
+        scroll = Gtk.ScrolledWindow()
+        scroll.add(listbox)
+
+        content = self.get_content_area()
+        content.pack_start(scroll, True, True, 0)
+
+        content.show_all()
+        self.get_action_area().hide()
+
+    def on_row_click(self, listbox, row):
+        self.response(row.get_index())

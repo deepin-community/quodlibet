@@ -13,8 +13,11 @@ Copyright: 2004-2010 Joe Wreschnig <joe.wreschnig@gmail.com>
     2006-2010 Hans van Dok <dok@xs4all.nl>
     2009-2018 Christoph Reiter <reiter.christoph@gmail.com>
     2009,2010 Steven Robertson <steven@strobe.cc>
-    2010-2018 Nick B <nick@declension.com>
+    2010-2022 Nick Boultbee <nick@declension.com>
     2013,2014 Simonas Kazlauskas <git@kazlauskas.me>
+    2021,2022 Jej@github
+    2021 Joschua Gandert
+    2021 halfbrained@github
     and others
 License: GPL-2+
 
@@ -56,7 +59,7 @@ Copyright: 1998 James Henstridge <james@daa.com.au>
     2009 Hans van Dok <dok@xs4all.nl>
     2009,2010 Steven Robertson <steven@strobe.cc>
     2010-2011 Michaël Ball <michael.ball@gmail.com>
-    2010-2018 Nick B <nick@declension.net>
+    2010-2022 Nick Boultbee <nick@declension.net>
     2010 Aymeric Mansoux <aymeric@goto10.org>
     2010 Felix Krull <f_krull@gmx.de>
     2011-2015 Anton Shestakov <engored@ya.ru>
@@ -70,6 +73,9 @@ Copyright: 1998 James Henstridge <james@daa.com.au>
     2017 Till Berger <till@mellthas.de>
     2017 Meriipu
     2017 Kristian Laakkonen <kristian.laakkonen@gmail.com>
+    2018 David Morris
+    2021 halfbrained@github
+    2021 Joschua Gandert
 License: GPL-2+
 
 Files: quodlibet/packages/raven/*

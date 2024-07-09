@@ -6,7 +6,7 @@ Last-Update: 2018-08-11
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
 --- a/docs/conf.py
 +++ b/docs/conf.py
-@@ -51,7 +51,6 @@
+@@ -54,7 +54,6 @@
  
  html_context = {
      'extra_css_files': [

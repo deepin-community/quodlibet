@@ -227,15 +227,15 @@ class EditCommand(Command):
         # write to tmp file
         fd, path = tempfile.mkstemp(suffix=".txt")
 
-        # XXX: copy mtime here so we can test for changes in tests by
-        # setting a out of date mtime on the source song file
-        copy_mtime(args[0], path)
-
         try:
             try:
                 os.write(fd, dump)
             finally:
                 os.close(fd)
+
+            # XXX: copy mtime here so we can test for changes in tests by
+            # setting a out of date mtime on the source song file
+            copy_mtime(args[0], path)
 
             # only parse the result if the editor returns 0 and the mtime has
             # changed
@@ -301,7 +301,9 @@ class SetCommand(Command):
             song = self.load_song(path)
 
             if not song.can_change(tag):
-                raise CommandError(_("Can not set %r") % tag)
+                vars = dict(tag=tag, format=type(song).format, file=song("~filename"))
+                raise CommandError(
+                    _("Can not set %(tag)r for %(format)s file %(file)r") % vars)
 
             self.log("Set %r to %r" % (value, tag))
             if tag in song:

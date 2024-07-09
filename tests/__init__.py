@@ -18,15 +18,15 @@ except ImportError:
     raise SystemExit("pytest missing: sudo apt-get install python3-pytest")
 
 try:
-    import xvfbwrapper
+    import pyvirtualdisplay
 except ImportError:
-    xvfbwrapper = None
+    pyvirtualdisplay = None
 
 import quodlibet
 from quodlibet.util.path import xdg_get_cache_home
 from quodlibet import util
 
-from senf import fsnative, path2fsn, environ
+from senf import fsnative, path2fsn
 from unittest import TestCase as OrigTestCase
 
 
@@ -110,7 +110,7 @@ def init_fake_app():
 
     from quodlibet import browsers
     from quodlibet.player.nullbe import NullPlayer
-    from quodlibet.library.libraries import SongFileLibrary
+    from quodlibet.library import SongFileLibrary
     from quodlibet.library.librarians import SongLibrarian
     from quodlibet.qltk.quodlibetwindow import QuodLibetWindow, PlayerOptions
     from quodlibet.util.cover import CoverManager
@@ -182,45 +182,45 @@ def init_test_environ():
     # create a user dir in /tmp and set env vars
     _TEMP_DIR = tempfile.mkdtemp(prefix=fsnative(u"QL-TEST-"))
 
-    # needed for dbus/dconf
-    runtime_dir = tempfile.mkdtemp(prefix=fsnative(u"RUNTIME-"), dir=_TEMP_DIR)
-    os.chmod(runtime_dir, 0o700)
-    environ["XDG_RUNTIME_DIR"] = runtime_dir
-
     # force the old cache dir so that GStreamer can re-use the GstRegistry
     # cache file
-    environ["XDG_CACHE_HOME"] = xdg_get_cache_home()
+    os.environ["XDG_CACHE_HOME"] = xdg_get_cache_home()
     # GStreamer will update the cache if the environment has changed
     # (in Gst.init()). Since it takes 0.5s here and doesn't add much,
     # disable it. If the registry cache is missing it will be created
     # despite this setting.
-    environ["GST_REGISTRY_UPDATE"] = fsnative(u"no")
+    os.environ["GST_REGISTRY_UPDATE"] = fsnative(u"no")
+
+    # In flatpak we might get a registry from a different/old flatpak build
+    # when testing new versions etc. Better always update in that case.
+    if util.is_flatpak():
+        del os.environ["GST_REGISTRY_UPDATE"]
 
     # set HOME and remove all XDG vars that default to it if not set
     home_dir = tempfile.mkdtemp(prefix=fsnative(u"HOME-"), dir=_TEMP_DIR)
-    environ["HOME"] = home_dir
+    os.environ["HOME"] = home_dir
 
     # set to new default
-    environ.pop("XDG_DATA_HOME", None)
-    environ.pop("XDG_CONFIG_HOME", None)
+    os.environ.pop("XDG_DATA_HOME", None)
+    os.environ.pop("XDG_CONFIG_HOME", None)
 
     # don't use dconf
-    environ["GSETTINGS_BACKEND"] = "memory"
+    os.environ["GSETTINGS_BACKEND"] = "memory"
 
     # don't use dconf
-    environ["GSETTINGS_BACKEND"] = "memory"
+    os.environ["GSETTINGS_BACKEND"] = "memory"
 
     # Force the default theme so broken themes don't affect the tests
-    environ["GTK_THEME"] = "Adwaita"
+    os.environ["GTK_THEME"] = "Adwaita"
 
-    if xvfbwrapper is not None:
-        _VDISPLAY = xvfbwrapper.Xvfb()
+    if pyvirtualdisplay is not None:
+        _VDISPLAY = pyvirtualdisplay.Display()
         _VDISPLAY.start()
 
     _BUS_INFO = None
     if os.name != "nt" and sys.platform != "darwin":
         _BUS_INFO = dbus_launch_user()
-        environ.update(_BUS_INFO)
+        os.environ.update(_BUS_INFO)
 
     quodlibet.init(no_translations=True, no_excepthook=True)
     quodlibet.app.name = "QL Tests"
@@ -230,9 +230,9 @@ def init_test_environ():
     # Note: setlocale has to be called after Gtk.init()
     try:
         if os.name != "nt":
-            environ["LANG"] = locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+            os.environ["LANG"] = locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
         else:
-            environ["LANG"] = "en_US.utf8"
+            os.environ["LANG"] = "en_US.utf8"
             locale.setlocale(locale.LC_ALL, "english")
     except locale.Error:
         pass
@@ -304,3 +304,12 @@ def unit(run=[], suite=None, strict=False, exitfirst=False, network=True,
         args.append(os.path.join("tests", suite))
 
     return pytest.main(args=args)
+
+
+def run_gtk_loop():
+    """Exhausts the GTK main loop of any events"""
+
+    # Import late as various version / init checks fail otherwise
+    from gi.repository import Gtk
+    while Gtk.events_pending():
+        Gtk.main_iteration()

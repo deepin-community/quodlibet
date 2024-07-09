@@ -26,13 +26,14 @@ String Tags
  * ``~originalyear``: The original year, derived from the ``originaldate`` tag
  * ``~playlists``: Comma-separated playlist names in which the song is included
  * ``~filesize``: Human formatted size (e.g. *4.5 MB*)
+ * ``~json``: A json-formatted string of all the non-internal tags and some internal tags
 
 
 The ``~people`` Internal Tag
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The internal ``~people`` tag combines the following tags to one: 
-``albumartist``, ``artist``, ``author``, ``composer``, ``~performers``, 
+``artist``, ``albumartist``, ``author``, ``composer``, ``~performers``, 
 ``originalartist``, ``lyricist``, ``arranger``, ``conductor`` in this exact 
 order.
 
