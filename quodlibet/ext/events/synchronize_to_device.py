@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2018 Jan Korte
 #           2020 Daniel Petrescu
 #
@@ -19,7 +18,7 @@ from quodlibet import _
 from quodlibet import app
 from quodlibet import config
 from quodlibet import get_user_dir
-from quodlibet import ngettext as ngt
+from quodlibet import ngettext
 from quodlibet import qltk
 from quodlibet import util
 from quodlibet.pattern import FileFromPattern
@@ -34,7 +33,6 @@ from quodlibet.query import Query
 from quodlibet.util import print_d, print_e, print_exc
 from quodlibet.util.enum import enum
 from quodlibet.util.path import strip_win32_incompat_from_path
-from quodlibet.util.string.titlecase import human_title
 
 PLUGIN_CONFIG_SECTION = 'synchronize_to_device'
 
@@ -85,7 +83,7 @@ class Entry:
 class SyncToDevice(EventPlugin, PluginConfigMixin):
     PLUGIN_ICON = Icons.NETWORK_TRANSMIT
     PLUGIN_ID = PLUGIN_CONFIG_SECTION
-    PLUGIN_NAME = human_title(PLUGIN_CONFIG_SECTION.replace('_', ' '))
+    PLUGIN_NAME = _('Synchronize to Device')
     PLUGIN_DESC = _('Synchronizes all songs from the selected saved searches '
                     'with the specified folder.')
 
@@ -103,8 +101,7 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
     summary_sep = ' ' * 2
     summary_sep_list = ',' + summary_sep
 
-    default_export_pattern = os.path.join(
-        _('<artist>'), _('<album>'), _('<title>'))
+    default_export_pattern = os.path.join('<artist>', '<album>', '<title>')
 
     model_cols = {'entry': (0, object),
                   'tag': (1, str),
@@ -256,7 +253,8 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
               'edited before starting the synchronization.'),
             Icons.DIALOG_WARNING, visible=False)
         self.status_deletions = self._label_with_icon(
-            _('Existing files in the destination path will be deleted!'),
+            _("Existing files in the destination path will be deleted (except "
+              "files named 'cover.jpg')!"),
             Icons.DIALOG_WARNING, visible=False)
 
         # Section for previewing exported files
@@ -743,7 +741,8 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
         for root, __, files in os.walk(self.expanded_destination):
             for name in files:
                 file_path = os.path.join(root, name)
-                if file_path not in export_paths:
+                if file_path not in export_paths and \
+                        "cover.jpg" not in file_path:
                     entry = Entry(None)
                     entry.filename = file_path
                     entry.tag = Entry.Tags.PENDING_DELETE
@@ -762,14 +761,16 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
         if self.c_songs_copy > 0:
             counter = self.c_songs_copy
             preview_progress.append(
-                _('attempt to write {count} {file_str}')
-                .format(count=counter, file_str=ngt('file', 'files', counter)))
+                ngettext('attempt to write {count} file',
+                         'attempt to write {count} files',
+                         counter).format(count=counter))
 
         if self.c_song_dupes > 0:
             counter = self.c_song_dupes
             preview_progress.append(
-                _('skip {count} duplicate {file_str}')
-                .format(count=counter, file_str=ngt('file', 'files', counter)))
+                ngettext('skip {count} duplicate file',
+                         'skip {count} duplicate files',
+                         counter).format(count=counter))
             for child in self.status_duplicates.get_children():
                 child.set_visible(True)
             self.status_duplicates.set_visible(True)
@@ -777,8 +778,9 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
         if self.c_songs_delete > 0:
             counter = self.c_songs_delete
             preview_progress.append(
-                _('delete {count} {file_str}')
-                .format(count=counter, file_str=ngt('file', 'files', counter)))
+                ngettext('delete {count} file',
+                         'delete {count} files',
+                         counter).format(count=counter))
             for child in self.status_deletions.get_children():
                 child.set_visible(True)
             self.status_deletions.set_visible(True)
@@ -846,10 +848,10 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
         except ValueError:
             self._show_sync_error(
                 _('Export path is not absolute'),
-                _('The pattern\n\n<b>{}</b>\n\ncontains "/" but does not start '
+                _('The pattern\n\n{}\n\ncontains "/" but does not start '
                   'from root. Please provide an absolute destination path by '
                   'making sure it starts with / or ~/.')
-                .format(util.escape(full_export_path)))
+                .format(util.bold(full_export_path)))
             return None, None
 
         return destination_path, pattern
@@ -1075,10 +1077,11 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
         """
         Delete all empty sub-directories from the given path.
         """
-        for root, dirs, __ in os.walk(self.expanded_destination, topdown=False):
+        for root, dirs, files in os.walk(self.expanded_destination, topdown=False):
             for dirname in dirs:
                 dir_path = os.path.realpath(os.path.join(root, dirname))
-                if not os.listdir(dir_path):
+                last_file_is_cover = files and files[0] == 'cover.jpg'
+                if not files or last_file_is_cover:
                     entry = Entry(None)
                     entry.filename = dir_path
                     entry.tag = Entry.Tags.IN_PROGRESS_DELETE
@@ -1086,6 +1089,8 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
                     print_d(_('Removing "{}"').format(entry.filename))
                     self.c_songs_delete += 1
                     try:
+                        if last_file_is_cover:
+                            os.remove(os.path.join(dir_path, files[0]))
                         os.rmdir(dir_path)
                     except Exception as ex:
                         entry.tag = Entry.Tags.RESULT_FAILURE + ': ' + str(ex)
@@ -1110,43 +1115,46 @@ class SyncToDevice(EventPlugin, PluginConfigMixin):
 
             counter = self.c_files_copy
             text.append(
-                _('written {count}/{total} {file_str}')
-                .format(count=counter, total=self.c_songs_copy,
-                        file_str=ngt('file', 'files', counter)))
+                ngettext('written {count}/{total} file',
+                         'written {count}/{total} files',
+                         counter).format(count=counter, total=self.c_songs_copy))
 
             if self.c_files_skip > 0:
                 counter = self.c_files_skip
                 text.append(
-                    _('(skipped {count} existing {file_str})').format(
-                        count=counter, file_str=ngt('file', 'files', counter)))
+                    ngettext('(skipped {count} existing file)',
+                             '(skipped {count} existing files)',
+                             counter).format(count=counter))
 
             sync_summary.append(self.summary_sep.join(text))
 
         if self.c_files_dupes > 0:
             counter = self.c_files_dupes
             sync_summary.append(
-                _('skipped {count}/{total} duplicate {file_str}')
-                .format(count=counter, total=self.c_song_dupes,
-                        file_str=ngt('file', 'files', counter)))
+                ngettext('skipped {count}/{total} duplicate file',
+                         'skipped {count}/{total} duplicate files',
+                         counter).format(count=counter, total=self.c_song_dupes))
 
         if self.c_files_delete > 0:
             counter = self.c_files_delete
             sync_summary.append(
-                _('deleted {count}/{total} {file_str}')
-                .format(count=counter, total=self.c_songs_delete,
-                        file_str=ngt('file', 'files', counter)))
+                ngettext('deleted {count}/{total} file',
+                         'deleted {count}/{total} files',
+                         counter).format(count=counter, total=self.c_songs_delete))
 
         if self.c_files_failed > 0:
             counter = self.c_files_failed
             sync_summary.append(
-                _('failed to sync {count} {file_str}')
-                .format(count=counter, file_str=ngt('file', 'files', counter)))
+                ngettext('failed to sync {count} file',
+                         'failed to sync {count} files',
+                         counter).format(count=counter))
 
         if self.c_files_skip_previous > 0:
             counter = self.c_files_skip_previous
             sync_summary.append(
-                _('skipped {count} {file_str} synchronized previously')
-                .format(count=counter, file_str=ngt('file', 'files', counter)))
+                ngettext('skipped {count} file synchronized previously',
+                         'skipped {count} files synchronized previously',
+                         counter).format(count=counter))
 
         sync_summary_text = self.summary_sep_list.join(sync_summary)
         sync_summary_text = sync_summary_prefix + sync_summary_text

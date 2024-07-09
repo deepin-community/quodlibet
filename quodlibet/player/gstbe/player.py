@@ -1,5 +1,6 @@
 # Copyright 2004-2011 Joe Wreschnig, Michael Urman, Steven Robertson,
 #           2011-2014 Christoph Reiter
+#           2020-2021 Nick Boultbee
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -709,8 +710,8 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
         # transitions don't occur there.
         # https://github.com/quodlibet/quodlibet/issues/1454
         # https://bugzilla.gnome.org/show_bug.cgi?id=695474
-        if self.song.multisong:
-            print_d("multisong: ignore about to finish")
+        if self.song and self.song.multisong:
+            print_d("This is a multisong - so ignoring 'about to finish' signal")
             return
 
         # mod + gapless deadlocks
@@ -919,7 +920,7 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
             self.emit('song-ended', info, stopped)
         self.emit('song-ended', song, stopped)
 
-        current = self._source.current if next_song is None else next_song
+        current = next_song if next_song else (self._source and self._source.current)
 
         # Then, set up the next song.
         self.song = self.info = current
@@ -990,7 +991,7 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
 
         if info_changed:
             # in case the title changed, make self.info a new instance
-            # and emit ended/started for the the old/new one
+            # and emit ended/started for the old/new one
             if self.info.get("title") != new_info.get("title"):
                 if self.info is not self.song:
                     self.emit('song-ended', self.info, False)
@@ -998,13 +999,13 @@ class GStreamerPlayer(BasePlayer, GStreamerPluginHandler):
                 self.__info_buffer = None
                 self.emit('song-started', self.info)
             else:
-                # in case title didn't changed, update the values of the
+                # in case title didn't change, update the values of the
                 # old instance if there is one and tell the library.
                 if self.info is not self.song:
                     self.info.update(new_info)
                     librarian.changed([self.info])
                 else:
-                    # So we don't loose all tags before the first title
+                    # So we don't lose all tags before the first title
                     # save it for later
                     self.__info_buffer = new_info
 

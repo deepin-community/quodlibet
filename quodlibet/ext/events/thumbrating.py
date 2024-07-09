@@ -6,7 +6,7 @@
 # (at your option) any later version.
 
 from gi.repository import Gtk
-from quodlibet import _
+from quodlibet import _, util
 from quodlibet.plugins.events import EventPlugin
 from quodlibet.qltk import Icons, ToggleButton
 from quodlibet.plugins.gui import UserInterfacePlugin
@@ -59,9 +59,7 @@ class RatingBox(Gtk.VBox):
     def __set_pending_score_value(self, score):
         existing_score = self.thumb_ups - self.thumb_downs
         if score == existing_score:
-            self.score_label.set_markup("<b>"
-                                        + str(int(score))
-                                        + "</b>")
+            self.score_label.set_markup(util.bold(str(int(score))))
         elif score > existing_score:
             self.score_label.set_markup("<b><span foreground=\"green\">"
                                         + str(int(score))
@@ -89,10 +87,10 @@ class ThumbRating(EventPlugin, UserInterfacePlugin):
 
     PLUGIN_ID = 'Thumb Rating'
     PLUGIN_NAME = _('Thumb Rating')
-    PLUGIN_DESC = _('Adds a thumb-up/thumb-down scoring system '
-                    'which is converted to a rating value. Useful '
-                    'for keeping running vote totals and sorting by '
-                    '\'~#score\'.')
+    PLUGIN_DESC_MARKUP = _('Adds a thumb-up / thumb-down scoring system '
+                           'which is converted to a rating value. Useful '
+                           'for keeping running vote totals and sorting by '
+                           '<b><tt>~#score</tt></b>.')
     PLUGIN_ICON = Icons.USER_BOOKMARKS
 
     # Threshold value where points should be recalculated

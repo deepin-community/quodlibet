@@ -207,7 +207,9 @@ class ResizeImage(Gtk.Bin):
             pixbuf = scale(pixbuf, (width, height))
 
         style_context = self.get_style_context()
-
+        if not pixbuf:
+            print_w(f"Failed to scale pixbuf for {self._path}")
+            return
         surface = get_surface_for_pixbuf(self, pixbuf)
         Gtk.render_icon_surface(style_context, cairo_context, surface, 0, 0)
 
@@ -267,7 +269,7 @@ class CoverImage(Gtk.EventBox):
         self.set_song(self.__song)
 
     def update_bci(self, albumfile):
-        #if there's a big image displaying, it should update.
+        # If there's a big image displaying, it should update.
         if self.__current_bci is not None:
             self.__current_bci.destroy()
             if albumfile:

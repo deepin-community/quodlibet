@@ -1,5 +1,6 @@
 # Copyright 2004-2005 Joe Wreschnig, Michael Urman
-#           2012-2017 Nick Boultbee
+#           2012-2022 Nick Boultbee
+#                2022 Jej@github
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -10,27 +11,29 @@
 # are called in tight loops. Don't change things just to make them
 # more readable, unless they're also faster.
 
+import json
 import os
 import re
 import shutil
 import time
-from typing import List
+from typing import Any, List, Tuple, Generic, TypeVar, Optional
 from collections import OrderedDict
 from itertools import zip_longest
 
-from senf import fsn2uri, fsnative, fsn2text, devnull, bytes2fsn, path2fsn
+from senf import fsn2uri, fsnative, fsn2text, bytes2fsn, path2fsn
 
 from quodlibet import _, print_d
 from quodlibet import util
 from quodlibet import config
-from quodlibet.util.path import mkdir, mtime, expanduser, normalize_path, \
+from quodlibet.util.path import mkdir, mtime, normalize_path, \
                                 ismount, get_home_dir, RootPathFile
 from quodlibet.util.string import encode, decode, isascii
 from quodlibet.util.environment import is_windows
 
-from quodlibet.util import iso639
+from quodlibet.util import iso639, cached_property
 from quodlibet.util import human_sort_key as human, capitalize
 
+from quodlibet.util.string.date import format_date
 from quodlibet.util.tags import TAG_ROLES, TAG_TO_SORT
 
 from ._image import ImageContainer
@@ -38,6 +41,9 @@ from ._misc import AudioFileError, translate_errors
 
 
 translate_errors
+
+AlbumKey = Tuple[str, str, str]
+"""An album key is (currently) a tuple"""
 
 MIGRATE = {"~#playcount", "~#laststarted", "~#lastplayed", "~#added",
            "~#skipcount", "~#rating", "~bookmark"}
@@ -49,6 +55,11 @@ PEOPLE = ["artist", "albumartist", "author", "composer", "~performers",
 
 TIME_TAGS = {"~#lastplayed", "~#laststarted", "~#added", "~#mtime"}
 """Time in seconds since epoch, defaults to 0"""
+
+HUMAN_TO_NUMERIC_TIME_TAGS = {t.replace("~#", "~"): t for t in TIME_TAGS}
+
+DURATION_TAGS = {"~#length"}
+"""Duration in seconds"""
 
 SIZE_TAGS = {"~#filesize"}
 """Size in bytes, defaults to 0"""
@@ -89,7 +100,15 @@ def decode_value(tag, value):
     return str(value)
 
 
-class AudioFile(dict, ImageContainer):
+K = TypeVar("K")
+
+
+class HasKey(Generic[K]):
+    """Many things can be keyed"""
+    key: K
+
+
+class AudioFile(dict, ImageContainer, HasKey):
     """An audio file. It looks like a dict, but implements synthetic
     and tied tags via __call__ rather than __getitem__. This means
     __getitem__, get, and so on can be used for efficiency.
@@ -133,6 +152,10 @@ class AudioFile(dict, ImageContainer):
     mimes: List[str] = []
     """MIME types this class can represent"""
 
+    @cached_property
+    def _date_format(self) -> str:
+        return config.gettext("settings", "datecolumn_timestamp_format")
+
     def __init__(self, default=tuple(), **kwargs):
         for key, value in dict(default).items():
             self[key] = value
@@ -147,11 +170,11 @@ class AudioFile(dict, ImageContainer):
             self.get("~filename"))
 
     @util.cached_property
-    def album_key(self):
-        return (human(self("albumsort", "")),
-                human(self("albumartistsort", "")),
-                self.get("album_grouping_key") or self.get("labelid") or
-                self.get("musicbrainz_albumid") or "")
+    def album_key(self) -> AlbumKey:
+        id_val: str = (self.get("album_grouping_key")
+                       or self.get("labelid")
+                       or self.get("musicbrainz_albumid", ""))  # type: ignore
+        return id_val, human(self("albumsort", "")), human(self("albumartistsort", ""))
 
     @util.cached_property
     def sort_key(self):
@@ -211,7 +234,7 @@ class AudioFile(dict, ImageContainer):
         pop("sort_key", None)
 
     @property
-    def key(self):
+    def key(self) -> K:  # type: ignore
         return self["~filename"]
 
     @property
@@ -253,8 +276,13 @@ class AudioFile(dict, ImageContainer):
         backup = dict(self)
         fn = self["~filename"]
         saved = {}
+        persisted = config.getboolean("editing", "save_to_songs")
+        persisted_keys = ({"~#rating", "~#playcount"}
+                          if self.supports_rating_and_play_count_in_file and persisted
+                          else set())
         for key in self:
-            if key in MIGRATE:
+            # Only migrate keys that aren't (probably) persisted to file (#3569)
+            if key in MIGRATE - persisted_keys:
                 saved[key] = self[key]
         self.clear()
         self["~filename"] = fn
@@ -270,7 +298,7 @@ class AudioFile(dict, ImageContainer):
         """Returns a list of keys that are not internal, i.e. they don't
         have '~' in them."""
 
-        return list(filter(lambda s: s[:1] != "~", self.keys()))
+        return [s for s in self.keys() if s[:1] != "~"]
 
     def prefixkeys(self, prefix):
         """Returns a list of dict keys that either match prefix or start
@@ -290,7 +318,7 @@ class AudioFile(dict, ImageContainer):
     def iterrealitems(self):
         return ((k, v) for (k, v) in self.items() if k[:1] != "~")
 
-    def __call__(self, key, default=u"", connector=" - ", joiner=', '):
+    def __call__(self, key, default: Any = u"", connector=" - ", joiner=', '):
         """Return the value(s) for a key, synthesizing if necessary.
         Multiple values for a key are delimited by newlines.
 
@@ -308,14 +336,13 @@ class AudioFile(dict, ImageContainer):
 
         For details on tied tags, see the documentation for `util.tagsplit`.
         """
-
+        real_key = key
         if key[:1] == "~":
             key = key[1:]
             if "~" in key:
-                real_key = "~" + key
                 values = []
                 sub_tags = util.tagsplit(real_key)
-                # If it's genuinely a tied tag (not ~~people etc), we want
+                # If it's genuinely a tied tag (not ~~people etc.), we want
                 # to delimit the multi-values separately from the tying
                 j = joiner if len(sub_tags) > 1 else "\n"
                 for t in sub_tags:
@@ -341,7 +368,7 @@ class AudioFile(dict, ImageContainer):
                 else:
                     return util.format_time_display(length)
             elif key == "#rating":
-                return dict.get(self, "~" + key, config.RATINGS.default)
+                return dict.get(self, real_key, config.RATINGS.default)
             elif key == "rating":
                 return util.format_rating(self("~#rating"))
             elif key == "people":
@@ -370,12 +397,12 @@ class AudioFile(dict, ImageContainer):
                 return self._prefixvalue("performer") or default
             elif key in ("performerssort", "performersort"):
                 return (self._prefixvalue("performersort") or
-                        self("~" + key[-4:], default, connector))
+                        self(real_key[-4:], default, connector))
             elif key in ("performers:roles", "performer:roles"):
                 return (self._role_call("performer") or default)
             elif key in ("performerssort:roles", "performersort:roles"):
                 return (self._role_call("performersort")
-                        or self("~" + key.replace("sort", ""), default,
+                        or self(real_key.replace("sort", ""), default,
                                 connector))
             elif key == "basename":
                 return os.path.basename(self["~filename"]) or self["~filename"]
@@ -394,9 +421,11 @@ class AudioFile(dict, ImageContainer):
                     return self("~format")
                 return codec
             elif key == "encoding":
-                parts = filter(None,
-                               [self.get("~encoding"), self.get("encodedby")])
-                encoding = u"\n".join(parts)
+                encoding = "\n".join(
+                    part
+                    for part in [self.get("~encoding"), self.get("encodedby")]
+                    if part
+                )
                 return encoding or default
             elif key == "language":
                 codes = self.list("language")
@@ -448,23 +477,28 @@ class AudioFile(dict, ImageContainer):
 
                 # If there are no embedded lyrics, try to read them from
                 # the external file.
+                lyric_filename = self.lyric_filename
+                if not lyric_filename:
+                    return default
                 try:
-                    with open(self.lyric_filename, "rb") as fileobj:
-                        print_d("Reading lyrics from %s" % self.lyric_filename)
+                    with open(lyric_filename, "rb") as fileobj:
+                        print_d(f"Reading lyrics from {lyric_filename!r}")
                         text = fileobj.read().decode("utf-8", "replace")
                         # try to skip binary files
                         if "\0" in text:
                             return default
                         return text
-                except EnvironmentError:
+                except (EnvironmentError, UnicodeDecodeError):
                     return default
             elif key == "filesize":
                 return util.format_size(self("~#filesize", 0))
             elif key == "playlists":
-                # See Issue 876
-                # Avoid circular references from formats/__init__.py
-                from quodlibet.util.collection import Playlist
-                playlists = Playlist.playlists_featuring(self)
+                # TODO: avoid static dependency here... somehow
+                from quodlibet import app
+                lib = app.library
+                if not lib:
+                    return ""
+                playlists = lib.playlists.playlists_featuring(self)
                 return "\n".join(s.name for s in playlists) or default
             elif key.startswith("#replaygain_"):
                 try:
@@ -472,15 +506,17 @@ class AudioFile(dict, ImageContainer):
                     return round(float(val.split(" ")[0]), 2)
                 except (ValueError, TypeError, AttributeError):
                     return default
+            elif real_key in HUMAN_TO_NUMERIC_TIME_TAGS:
+                time_value = float(self.get(HUMAN_TO_NUMERIC_TIME_TAGS[real_key], 0))
+                return format_date(time_value, self._date_format)
             elif key[:1] == "#":
-                key = "~" + key
-                if key in self:
-                    return self[key]
-                elif key in NUMERIC_ZERO_DEFAULT:
+                if real_key in self:
+                    return self[real_key]
+                elif real_key in NUMERIC_ZERO_DEFAULT:
                     return 0
                 else:
                     try:
-                        val = self[key[2:]]
+                        val = self[real_key[2:]]
                     except KeyError:
                         return default
                     try:
@@ -490,17 +526,28 @@ class AudioFile(dict, ImageContainer):
                             return float(val)
                         except ValueError:
                             return default
+            elif key == "json":
+                # Help the testing by being deterministic with sort_keys.
+                return json.dumps(self, sort_keys=True)
             else:
-                return dict.get(self, "~" + key, default)
+                return dict.get(self, real_key, default)
 
         elif key == "title":
             title = dict.get(self, "title")
             if title is None:
-                basename = self("~basename")
-                return "%s [%s]" % (
-                    decode_value("~basename", basename), _("Unknown"))
-            else:
-                return title
+                # build a title with missing_title_template option
+                unknown_track_template = _(config.gettext(
+                    "browsers", "missing_title_template"))
+
+                from quodlibet.pattern import Pattern
+                try:
+                    pattern = Pattern(unknown_track_template)
+                except ValueError:
+                    title = decode_value("~basename", self("~basename"))
+                else:
+                    title = pattern % self
+
+            return title
         elif key in SORT_TO_TAG:
             try:
                 return self[key]
@@ -547,7 +594,7 @@ class AudioFile(dict, ImageContainer):
         return "\n".join(descs)
 
     @property
-    def lyric_filename(self):
+    def lyric_filename(self) -> Optional[str]:
         """Returns the validated, or default, lyrics filename for this
         file. User defined '[memory] lyric_rootpaths' and
         '[memory] lyric_filenames' matches take precedence"""
@@ -560,8 +607,8 @@ class AudioFile(dict, ImageContainer):
         def expand_pathfile(rpf):
             """Return the expanded RootPathFile"""
             expanded = []
-            root = expanduser(rpf.root)
-            pathfile = expanduser(rpf.pathfile)
+            root = os.path.expanduser(rpf.root)
+            pathfile = os.path.expanduser(rpf.pathfile)
             if rx_params.search(pathfile):
                 root = expand_patterns(root).format(self)
                 pathfile = expand_patterns(pathfile).format(self)
@@ -582,21 +629,17 @@ class AudioFile(dict, ImageContainer):
             return expanded
 
         def sanitise(sep, parts):
-            """Return a santisied version of a path's parts"""
-            return sep.join(part.replace(os.path.sep, u'')[:128]
-                                for part in parts)
+            """Return a sanitised version of a path's parts"""
+            return sep.join(part.replace(os.path.sep, u'')[:128] for part in parts)
 
         # setup defaults (user-defined take precedence)
         # root search paths
-        lyric_paths = \
-            config.getstringlist("memory", "lyric_rootpaths", [])
+        lyric_paths = config.getstringlist("memory", "lyric_rootpaths", [])
         # ensure default paths
         lyric_paths.append(os.path.join(get_home_dir(), ".lyrics"))
-        lyric_paths.append(
-            os.path.join(os.path.dirname(self.comma('~filename'))))
+        lyric_paths.append(os.path.join(os.path.dirname(self.comma('~filename'))))
         # search pathfile names
-        lyric_filenames = \
-            config.getstringlist("memory", "lyric_filenames", [])
+        lyric_filenames = config.getstringlist("memory", "lyric_filenames", [])
         # ensure some default pathfile names
         lyric_filenames.append(
             sanitise(os.sep, [(self.comma("lyricist") or
@@ -620,7 +663,7 @@ class AudioFile(dict, ImageContainer):
         #print_d("searching for lyrics in:\n%s" % '\n'.join(pathfiles.keys()))
 
         # expand each raw pathfile in turn and test for existence
-        match_ = ""
+        match_ = None
         pathfiles_expanded = OrderedDict()
         for pf, rpf in pathfiles.items():
             for rpf in expand_pathfile(rpf):  # resolved as late as possible
@@ -629,7 +672,7 @@ class AudioFile(dict, ImageContainer):
                 if os.path.exists(pathfile):
                     match_ = pathfile
                     break
-            if match_ != "":
+            if match_:
                 break
 
         if not match_:
@@ -690,6 +733,9 @@ class AudioFile(dict, ImageContainer):
         will be unicode.
 
         If the value is numeric, that is returned rather than a list.
+
+        Because this function is used to format values for display,
+        blank tags are removed from the results.
         """
 
         if "~" in key or key == "title":
@@ -703,7 +749,7 @@ class AudioFile(dict, ImageContainer):
         if isinstance(v, (int, float)):
             return v
         else:
-            return v.replace("\n", ", ")
+            return re.sub("\n+", ", ", v.strip())
 
     def list(self, key):
         """Get all values of a tag, as a list. Synthetic tags are supported,
@@ -712,8 +758,9 @@ class AudioFile(dict, ImageContainer):
         For file path keys the returned list might contain path items
         (non-unicode).
 
-        An empty synthetic tag cannot be distinguished from a non-existent
-        synthetic tag; both result in [].
+        An empty tag cannot be distinguished from a non-existent tag; both
+        result in []. If a file contains multiple values of a tag, empty
+        instances of the tag will not be included in the list.
         """
 
         if "~" in key or key == "title":
@@ -721,17 +768,24 @@ class AudioFile(dict, ImageContainer):
             if v == "":
                 return []
             else:
-                return v.split("\n") if isinstance(v, str) else [v]
+                v = v.split("\n") if isinstance(v, str) else [v]
+                return [x for x in v if x]
         else:
-            v = self.get(key)
-            return [] if v is None else v.split("\n")
+            v = self.get(key, "")
+            return [x for x in v.split("\n") if x]
 
     def list_sort(self, key):
         """Like list but return display,sort pairs when appropriate
         and work on all tags.
 
-        In case no sort value exists the display one is returned. The sort
-        value is only an empty string if the display one is empty as well.
+        In case no sort value exists the display one is returned. If a
+        display tag is empty, the tag is removed from the returned list
+        and the corresponding tag in the sort tag list is ignored as
+        well.
+
+        The assumption being made here is that if the ordering between
+        display and sort tags doesn't match exactly, that's a problem
+        with the user's file.
         """
 
         display = decode_value(key, self(key))
@@ -746,7 +800,7 @@ class AudioFile(dict, ImageContainer):
 
         result = []
         for d, s in zip_longest(display, sort):
-            if d is not None:
+            if d:
                 result.append((d, (s if s is not None and s != "" else d)))
         return result
 
@@ -1008,7 +1062,7 @@ class AudioFile(dict, ImageContainer):
         """Remove a value from the given key.
 
         If value is None remove all values for that key, if it exists.
-        If the key or value is not found do nothing.
+        If the key or value is not found, do nothing.
         """
 
         if key not in self:
@@ -1056,8 +1110,7 @@ class AudioFile(dict, ImageContainer):
             except OverflowError:
                 scale = 1.0
             else:
-                if scale > 1:
-                    scale = 1.0  # don't clip
+                scale = min(scale, 1.0)
             return min(15, scale)
 
     def write(self):
@@ -1117,7 +1170,7 @@ class AudioFile(dict, ImageContainer):
 
 # Looks like the real thing.
 DUMMY_SONG = AudioFile({
-    '~#length': 234, '~filename': devnull,
+    '~#length': 234, '~filename': os.devnull,
     'artist': 'The Artist', 'album': 'An Example Album',
     'title': 'First Track', 'tracknumber': 1,
     'date': '2010-12-31',

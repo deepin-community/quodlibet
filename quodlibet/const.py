@@ -8,12 +8,12 @@
 import sys
 import os
 
-
 # MSYS2 defines MSYSTEM which changes os.sep/os.path.sep for the mingw
 # Python build. Unset here and restart.. (does not work for py.test etc.)
 # XXX: do this here since it gets executed by all scripts
 if os.name == "nt" and "MSYSTEM" in os.environ:
     import subprocess
+
     del os.environ["MSYSTEM"]
     argv = []
     for arg in [sys.executable] + sys.argv:
@@ -47,24 +47,27 @@ class Version(tuple):
         if self[0] == version_tuple[0] and version_tuple >= self:
             return
         message = " " + self.message if self.message else ""
-        raise ImportError("%s %s required. %s found.%s" % (
-            self.name, self, Version("", *version_tuple), message))
+        version = Version("", *version_tuple)
+        raise ImportError(f"{self.name} {self} required. {version} found.{message}")
 
 
 class MinVersions:
     """Dependency requirements for Quod Libet / Ex Falso"""
 
-    PYTHON3 = Version("Python3", 3, 7)
-    MUTAGEN = Version("Mutagen", 1, 34,
-        message="Use the Quod Libet unstable PPAs/repos to get a newer "
-                "mutagen version.")
+    PYTHON3 = Version("Python3", 3, 8)
+    MUTAGEN = Version("Mutagen", 1, 37,
+                      message="Use the Quod Libet unstable PPAs/repos to get a newer "
+                              "mutagen version.")
     GTK = Version("GTK+", 3, 18)
     PYGOBJECT = Version("PyGObject", 3, 18)
     GSTREAMER = Version("GStreamer", 1, 8)
 
 
-VERSION_TUPLE = Version("", 4, 4, 0)
+VERSION_TUPLE = Version("", 4, 6, 0)
 VERSION = str(VERSION_TUPLE)
+
+QL_NAMESPACE = "https://quodlibet.github.io"
+"""A namespace for registering things against e.g. XMLNS"""
 
 # entry point for the user guide / wiki
 _DOCS_BASE_URL = "https://quodlibet.readthedocs.org/en/latest"
@@ -80,9 +83,9 @@ SUPPORT_EMAIL = "quod-libet-development@googlegroups.com"
 
 # about dialog, --version etc.
 WEBSITE = "https://quodlibet.readthedocs.org/"
-COPYRIGHT = u"Copyright 2004-2019"
+COPYRIGHT = "Copyright 2004-2023"
 
-AUTHORS = sorted(u"""\
+AUTHORS = sorted("""\
 Alexandre Passos
 Alexey Bobyakov
 Alex Geoffrey Smith
@@ -200,7 +203,7 @@ a-vrma@github
 Phidica@github
 """.strip().split("\n"))
 
-TRANSLATORS = sorted(u"""
+TRANSLATORS = sorted("""
 Åka Sikrom (nb)
 Alexandre Passos (pt)
 Andreas Bertheussen (nb)
@@ -266,7 +269,7 @@ Kirill Romanov (ru)
 wvxwxvw@github (ru)
 """.strip().splitlines())
 
-ARTISTS = sorted(u"""\
+ARTISTS = sorted("""\
 Tobias
 Jakub Steiner
 Fabien Devaux

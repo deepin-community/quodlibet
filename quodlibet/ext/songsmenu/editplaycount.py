@@ -1,5 +1,5 @@
 # Copyright 2012-2015 Ryan "ZDBioHazard" Turner <zdbiohazard2@gmail.com>
-#                2016 Nick Boultbee
+#             2016-22 Nick Boultbee
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
 
 from gi.repository import Gtk
 
-from quodlibet import _
+from quodlibet import _, util
 from quodlibet.plugins.songshelpers import each_song, is_writable
 from quodlibet.plugins.songsmenu import SongsMenuPlugin
 from quodlibet.qltk import Icons
@@ -17,15 +17,17 @@ from quodlibet.qltk import Icons
 class EditPlaycount(SongsMenuPlugin):
     PLUGIN_ID = "editplaycount"
     PLUGIN_NAME = _("Edit Playcount")
-    PLUGIN_DESC = _("Edit a song's ~#playcount and ~#skipcount."
-                    "\n\n"
-                    "When multiple songs are selected, counts will be "
-                    "incremented, rather than set."
-                    "\n\n"
-                    "When setting a song's ~#playcount to 0, the "
-                    "~#lastplayed and ~#laststarted entries will be cleared. "
-                    "However, when setting a 0-play song to a positive play "
-                    "count, no play times will be created.")
+    PLUGIN_DESC_MARKUP = _(
+        "Edit a song's <tt>~#playcount</tt> and <tt>~#skipcount.</tt>"
+        "\n\n"
+        "When multiple songs are selected, counts will be "
+        "incremented, rather than set."
+        "\n\n"
+        "When setting a song's <tt>~#playcount</tt> to 0, "
+        "the <tt>~#lastplayed</tt> and <tt>~#laststarted</tt> "
+        "entries will be cleared. "
+        "However, when setting a 0-play song to a positive play "
+        "count, no play times will be created.")
     PLUGIN_ICON = Icons.EDIT
     REQUIRES_ACTION = True
 
@@ -80,8 +82,8 @@ class EditPlaycount(SongsMenuPlugin):
         else:
             note = Gtk.Label()
             note.set_justify(Gtk.Justification.CENTER)
-            note.set_markup("<b>Multiple files selected.</b>\n"
-                            "Counts will be incremented.")
+            note.set_markup(util.bold(_("Multiple files selected."))
+                            + "\n" + _("Counts will be incremented."))
             dlg.vbox.add(note)
 
         dlg.show_all()
@@ -103,8 +105,7 @@ class EditPlaycount(SongsMenuPlugin):
                 # itself and the last played/started time. We don't
                 # want unused or impossible data floating around.
                 if song.get('~#playcount', 0) == 0:
-                    for tag in ['~#playcount', '~#lastplayed',
-                                '~#laststarted']:
+                    for tag in ['~#playcount', '~#lastplayed', '~#laststarted']:
                         song.pop(tag, None)
 
                 # Also delete the skip count if it's zero.

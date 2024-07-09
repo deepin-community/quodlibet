@@ -1,5 +1,6 @@
 # Copyright 2004-2005 Joe Wreschnig, Michael Urman
 #           2009-2014 Christoph Reiter
+#                2021 Nick Boultbee
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -8,6 +9,8 @@
 
 import sys
 import base64
+
+from typing import List, Type, Optional
 
 import mutagen
 from mutagen.flac import Picture, error as FLACError
@@ -28,7 +31,7 @@ sys.modules["formats.oggvorbis"] = sys.modules[__name__]
 
 class MutagenVCFile(AudioFile):
     format = "Unknown Mutagen + vorbiscomment"
-    MutagenType = None
+    MutagenType: Optional[Type[mutagen.FileType]] = None
 
     supports_rating_and_play_count_in_file = True
 
@@ -85,10 +88,7 @@ class MutagenVCFile(AudioFile):
         if one is not None:
             final = one
         if total is not None:
-            if final is None:
-                final = "/" + total
-            else:
-                final += "/" + total
+            final = f"{final or ''}/{total}"
 
         if final is not None:
             self[single] = final
@@ -97,12 +97,12 @@ class MutagenVCFile(AudioFile):
         email = config.get("editing", "save_email").strip()
         maps = {"rating": float, "playcount": int}
         for keyed_key, func in maps.items():
-            emails = [s.lower() for s in ["", ":" + const.EMAIL, ":" + email]]
+            emails = [s.lower() for s in ["", f":{const.EMAIL}", f":{email}"]]
             for subkey in emails:
                 key = keyed_key + subkey
                 if key in self:
                     try:
-                        self["~#" + keyed_key] = func(self[key])
+                        self[f"~#{keyed_key}"] = func(self[key])
                     except ValueError:
                         pass
                     del(self[key])
@@ -259,17 +259,16 @@ class MutagenVCFile(AudioFile):
             if key.startswith("rating:") or key.startswith("playcount:"):
                 if key.split(":", 1)[1] in [const.EMAIL, email]:
                     del(comments[key])
-            elif key not in ["metadata_block_picture", "coverart",
-                    "coverartmime"]:
+            elif key not in ["metadata_block_picture", "coverart", "coverartmime"]:
                 del(comments[key])
 
         if config.getboolean("editing", "save_to_songs"):
             email = email or const.EMAIL
             if self.has_rating:
-                comments["rating:" + email] = str(self("~#rating"))
+                comments[f"rating:{email}"] = str(self("~#rating"))
             playcount = self.get("~#playcount", 0)
             if playcount != 0:
-                comments["playcount:" + email] = str(playcount)
+                comments[f"playcount:{email}"] = str(playcount)
 
     def __prep_write_total(self, comments, main, fallback, single):
         lower = self.as_lowercased()
@@ -302,7 +301,7 @@ class MutagenVCFile(AudioFile):
         tags = audio.tags
         if tags is None:
             return False
-        return 'rating:' + email in tags and 'playcount:' + email in tags
+        return f"rating:{email}" in tags and f"playcount:{email}" in tags
 
     def write(self):
         with translate_errors():
@@ -316,17 +315,15 @@ class MutagenVCFile(AudioFile):
         for key in lower.realkeys():
             audio.tags[key] = lower.list(key)
 
-        self.__prep_write_total(audio.tags,
-                                "tracktotal", "totaltracks", "tracknumber")
-        self.__prep_write_total(audio.tags,
-                                "disctotal", "totaldiscs", "discnumber")
+        self.__prep_write_total(audio.tags, "tracktotal", "totaltracks", "tracknumber")
+        self.__prep_write_total(audio.tags, "disctotal", "totaldiscs", "discnumber")
 
         with translate_errors():
             audio.save()
         self.sanitize()
 
 extensions = []
-ogg_formats = []
+ogg_formats: List[Type[mutagen.FileType]] = []
 
 from mutagen.oggvorbis import OggVorbis
 extensions.append(".ogg")

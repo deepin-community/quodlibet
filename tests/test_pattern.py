@@ -232,6 +232,17 @@ class TPattern(_TPattern):
         s.assertEquals(pat.format(song),
             b"5. \xe3\x81\x99\xe3\x81\xbf\xe3\x82\x8c".decode('utf-8'))
 
+    def test_json(s):
+        pat = Pattern('<~json>')
+        if os.name != "nt":
+            s.assertEquals(pat.format(s.a),
+                '{"artist": "Artist", "title": "Title5", "tracknumber": "5/6",'
+                ' "xmltest": "<&>", "~filename": "/path/to/a.mp3"}')
+        else:
+            s.assertEquals(pat.format(s.a),
+                '{"artist": "Artist", "title": "Title5", "tracknumber": "5/6",'
+                ' "xmltest": "<&>", "~filename": "C:\\\\path\\\\to\\\\a.mp3"}')
+
 
 class _TFileFromPattern(_TPattern):
     def _create(self, string):
@@ -507,67 +518,52 @@ class TPatternFormatList(_TPattern):
         s.failUnlessEqual(pat.format_list(s.h), {(u'Album5', u'SortAlbum5')})
         pat = Pattern('<artist>')
         s.failUnlessEqual(pat.format_list(s.h), {(u'Artist1', u'SortA1'),
-                                                 (u'', u'SortA2'),
                                                  (u'Artist3', u'Artist3')})
         pat = Pattern('<artist> x')
         s.failUnlessEqual(pat.format_list(s.h), {(u'Artist1 x', u'SortA1 x'),
-                                                 (u' x', u'SortA2 x'),
                                                  (u'Artist3 x', u'Artist3 x')})
 
     def test_sort_tied(s):
         pat = Pattern('<~artist~album>')
         s.failUnlessEqual(pat.format_list(s.h), {(u'Artist1', u'SortA1'),
-                                                 (u'', u'SortA2'),
                                                  (u'Artist3', u'Artist3'),
                                                  (u'Album5', u'SortAlbum5')})
         pat = Pattern('<~album~artist>')
         s.failUnlessEqual(pat.format_list(s.h), {(u'Artist1', u'SortA1'),
-                                                 (u'', u'SortA2'),
                                                  (u'Artist3', u'Artist3'),
                                                  (u'Album5', u'SortAlbum5')})
         pat = Pattern('<~artist~artist>')
         s.failUnlessEqual(pat.format_list(s.h), {(u'Artist1', u'SortA1'),
-                                                 (u'', u'SortA2'),
                                                  (u'Artist3', u'Artist3')})
 
     def test_sort_combine(s):
         pat = Pattern('<album> <artist>')
         s.failUnlessEqual(pat.format_list(s.h),
                           {(u'Album5 Artist1', u'SortAlbum5 SortA1'),
-                           (u'Album5 ', u'SortAlbum5 SortA2'),
                            (u'Album5 Artist3', u'SortAlbum5 Artist3')})
         pat = Pattern('x <artist> <album>')
         s.failUnlessEqual(pat.format_list(s.h),
                           {(u'x Artist1 Album5', u'x SortA1 SortAlbum5'),
-                           (u'x  Album5', u'x SortA2 SortAlbum5'),
                            (u'x Artist3 Album5', u'x Artist3 SortAlbum5')})
         pat = Pattern(' <artist> <album> xx')
         s.failUnlessEqual(pat.format_list(s.h),
                           {(u' Artist1 Album5 xx', u' SortA1 SortAlbum5 xx'),
-                           (u'  Album5 xx', u' SortA2 SortAlbum5 xx'),
                            (u' Artist3 Album5 xx', u' Artist3 SortAlbum5 xx')})
         pat = Pattern('<album> <tracknumber> <artist>')
         s.failUnlessEqual(pat.format_list(s.h),
                           {(u'Album5 7/8 Artist1', u'SortAlbum5 7/8 SortA1'),
-                           (u'Album5 7/8 ', u'SortAlbum5 7/8 SortA2'),
                            (u'Album5 7/8 Artist3', u'SortAlbum5 7/8 Artist3')})
         pat = Pattern('<tracknumber> <album> <artist>')
         s.failUnlessEqual(pat.format_list(s.h),
                           {(u'7/8 Album5 Artist1', u'7/8 SortAlbum5 SortA1'),
-                           (u'7/8 Album5 ', u'7/8 SortAlbum5 SortA2'),
                            (u'7/8 Album5 Artist3', u'7/8 SortAlbum5 Artist3')})
 
     def test_sort_multiply(s):
         pat = Pattern('<artist> <artist>')
         s.failUnlessEqual(pat.format_list(s.h),
                           {(u'Artist1 Artist1', u'SortA1 SortA1'),
-                           (u' Artist1', u'SortA2 SortA1'),
                            (u'Artist3 Artist1', u'Artist3 SortA1'),
-                           (u'Artist1 ', u'SortA1 SortA2'),
-                           (u' ', u'SortA2 SortA2'),
-                           (u'Artist3 ', u'Artist3 SortA2'),
                            (u'Artist1 Artist3', u'SortA1 Artist3'),
-                           (u' Artist3', u'SortA2 Artist3'),
                            (u'Artist3 Artist3', u'Artist3 Artist3')})
 
     def test_missing_value(self):

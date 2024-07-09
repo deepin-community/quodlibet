@@ -1,4 +1,5 @@
 # Copyright 2006-2007 Lukas Lalinsky
+#                2021 Nick Boultbee
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -273,7 +274,7 @@ class XinePlaylistPlayer(BasePlayer):
         # reset error state
         self.error = False
 
-        current = self._source.current if next_song is None else next_song
+        current = next_song if next_song else (self._source and self._source.current)
 
         # Then, set up the next song.
         self.song = self.info = current
@@ -299,8 +300,8 @@ class XinePlaylistPlayer(BasePlayer):
         # seekable might change if we change to None, so notify just in case
         self.notify("seekable")
 
-    def setup(self, playlist, song, seek_pos):
-        super().setup(playlist, song, seek_pos)
+    def setup(self, playlist, song, seek_pos, explicit=True):
+        super().setup(playlist, song, seek_pos, explicit=explicit)
         # xine's declining to seek so soon after startup; try again in 100ms
         if seek_pos:
             GLib.timeout_add(100, self.seek, seek_pos)

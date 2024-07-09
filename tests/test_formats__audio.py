@@ -3,25 +3,26 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-from tests import TestCase, get_data_path
 
+import io
 import os
 import shutil
-import io
+import time
 from contextlib import contextmanager
-from senf import fsnative, fsn2text, bytes2fsn, mkstemp, mkdtemp
+from tempfile import mkstemp, mkdtemp
 
-from quodlibet import config
+from quodlibet import config, app
 from quodlibet.formats import AudioFile, types as format_types, AudioFileError
-from quodlibet.formats._audio import NUMERIC_ZERO_DEFAULT
 from quodlibet.formats import decode_value, MusicFile, FILESYSTEM_TAGS
-from quodlibet.util.tags import _TAGS as TAGS
-from quodlibet.util.path import normalize_path, mkdir, get_home_dir, unquote, \
-                                escape_filename, RootPathFile
+from quodlibet.formats._audio import NUMERIC_ZERO_DEFAULT, TIME_TAGS
 from quodlibet.util.environment import is_windows
-
+from quodlibet.util.path import (normalize_path, mkdir, get_home_dir, unquote,
+                                 escape_filename, RootPathFile)
+from quodlibet.util.string.date import format_date
+from quodlibet.util.tags import _TAGS as TAGS
+from senf import fsnative, fsn2text, bytes2fsn
+from tests import TestCase, get_data_path, init_fake_app, destroy_fake_app
 from .helper import temp_filename
-
 
 bar_1_1 = AudioFile({
     "~filename": fsnative(u"/fakepath/1"),
@@ -37,7 +38,7 @@ bar_1_2 = AudioFile({
     "date": "2004-12-12", "originaldate": "2005-01-01",
     "~#filesize": 1024 ** 2, "~#bitrate": 128})
 bar_2_1 = AudioFile({
-    "~filename": fsnative(u"does not/exist"),
+    "~filename": fsnative(u"/does not/exist"),
     "title": "more songs",
     "discnumber": "2/2", "tracknumber": "1",
     "artist": "Foo\nI have two artists",
@@ -54,11 +55,15 @@ bar_va = AudioFile({
     "performer": "Jay-Z"})
 
 num_call = AudioFile({"custom": "0.3"})
+ANOTHER_RATING = 0.2
+SOME_RATING = 0.8
 
 
 class TAudioFile(TestCase):
 
     def setUp(self):
+        # Need the playlists library now
+        init_fake_app()
         config.RATINGS = config.HardCodedRatingsPrefs()
         fd, filename = mkstemp()
         os.close(fd)
@@ -68,6 +73,7 @@ class TAudioFile(TestCase):
         })
 
     def tearDown(self):
+        destroy_fake_app()
         try:
             os.unlink(self.quux["~filename"])
         except EnvironmentError:
@@ -160,7 +166,7 @@ class TAudioFile(TestCase):
         assert self.quux("~basename")
         assert self.quux("~dirname") == os.path.dirname(self.quux("~filename"))
         assert self.quux("title") == \
-            "%s [Unknown]" % fsn2text(self.quux("~basename"))
+            "%s [untitled Unknown Audio File]" % fsn2text(self.quux("~basename"))
 
         self.failUnlessEqual(bar_1_1("~#disc"), 1)
         self.failUnlessEqual(bar_1_2("~#disc"), 1)
@@ -303,7 +309,7 @@ class TAudioFile(TestCase):
         res = bar_2_1.list_separate("~~#track~artist~~filename")
         self.assertEqual(res, [(u'1', u'1'), (u'Foo', u'Foosort'),
                                (u'I have two artists', u'I have two artists'),
-                               (u'does not/exist', u'does not/exist')])
+                               (u'/does not/exist', u'/does not/exist')])
 
     def test_list_numeric(self):
         self.assertEqual(bar_1_2.list('~#bitrate'), [128])
@@ -351,11 +357,11 @@ class TAudioFile(TestCase):
         self.failUnless(af.can_change("foo bar"))
 
     def test_is_writable(self):
-        self.assertTrue(self.quux.is_writable())
-        os.chmod(self.quux["~filename"], 0o444)
-        self.assertFalse(self.quux.is_writable())
-        os.chmod(self.quux["~filename"], 0o644)
-        self.assertTrue(self.quux.is_writable())
+        fn = self.quux["~filename"]
+        os.chmod(fn, 0o444)
+        assert not self.quux.is_writable(), f"{fn!r} is writeable ({os.stat(fn)})"
+        os.chmod(fn, 0o644)
+        assert self.quux.is_writable(), f"{fn!r} is unwriteable ({os.stat(fn)})"
 
     def test_can_multiple_values(self):
         af = AudioFile()
@@ -396,6 +402,18 @@ class TAudioFile(TestCase):
         with temp_filename() as new_file:
             with self.assertRaises(ValueError):
                 self.quux.rename(new_file)
+
+    def test_playlists_tag(self):
+        songs_lib = app.library
+        pl_name = "playlist 123!"
+        songs_lib.add([bar_1_1, bar_1_2, self.quux])
+        pl_lib = songs_lib.playlists
+        pl = pl_lib.create(pl_name)
+        pl.extend([self.quux, bar_1_1])
+        assert pl, "Nothing added to playlist"
+        for song in pl:
+            assert song("~playlists") == pl_name
+        assert not bar_1_2("~playlists")
 
     def test_lyric_filename(self):
         song = AudioFile()
@@ -454,7 +472,7 @@ class TAudioFile(TestCase):
         """test built-in default local path"""
         with self.lyric_filename_test_setup(no_config=True) as ts:
             fp = os.path.join(ts.root, ts["artist"] + " - " +
-                                       ts["title"] + ".lyric")
+                              ts["title"] + ".lyric")
             with io.open(fp, "w", encoding='utf-8') as f:
                 f.write(u"")
             search = ts.lyric_filename
@@ -475,7 +493,7 @@ class TAudioFile(TestCase):
         """test custom lyrics file location / naming"""
         with self.lyric_filename_test_setup() as ts:
             fp = os.path.join(ts.root, ts["artist"] + " - " +
-                                       ts["title"] + ".lyric")
+                              ts["title"] + ".lyric")
             with io.open(fp, "w", encoding='utf-8') as f:
                 f.write(u"")
             search = ts.lyric_filename
@@ -722,6 +740,27 @@ class TAudioFile(TestCase):
         self.failUnlessEqual(q.list("~peoplesort:roles"),
             ["B, The (Guitar)", "C, The (Performance)", "A, The (Vocals)"])
 
+    def test_blank_tag_handling_comma(self):
+        q = AudioFile([("title", "A\n"),
+                       ("artists", "A\n\nB\n")])
+        self.failUnlessEqual(q.comma("artists"), "A, B")
+        self.failUnlessEqual(q.comma("~title~version"), "A")
+
+    def test_blank_tag_handling_list(self):
+        q = AudioFile([("artist", "A\n\nB\n"),
+                       ("performer", ""),
+                       ("albumartist", "C")])
+        self.failUnlessEqual(q.list("performer"), [])
+        self.failUnlessEqual(q.list("~people"), ["A", "B", "C"])
+
+    def test_blank_tag_handling_list_sort(self):
+        q = AudioFile([("artist", "A\n\nB"),
+                       ("artistsort", "\n\nY")])
+        self.failUnlessEqual(q.list_sort("artist"), [("A", "A"), ("B", "Y")])
+        q = AudioFile([("artist", "A\n\nB"),
+                       ("artistsort", "X\nY")])
+        self.failUnlessEqual(q.list_sort("artist"), [("A", "X"), ("B", "B")])
+
     def test_to_dump(self):
         dump = bar_1_1.to_dump()
         num = len(set(bar_1_1.keys()) | NUMERIC_ZERO_DEFAULT)
@@ -858,14 +897,14 @@ class TAudioFile(TestCase):
 
     def test_album_key(self):
         album_key_tests = [
-            ({}, ((), (), '')),
-            ({'album': 'foo'}, (('foo',), (), '')),
-            ({'labelid': 'foo'}, ((), (), 'foo')),
-            ({'musicbrainz_albumid': 'foo'}, ((), (), 'foo')),
-            ({'album': 'foo', 'labelid': 'bar'}, (('foo',), (), 'bar')),
+            ({}, ('', (), ())),
+            ({'album': 'foo'}, ('', ('foo',), ())),
+            ({'labelid': 'foo'}, ('foo', (), ())),
+            ({'musicbrainz_albumid': 'foo'}, ('foo', (), ())),
+            ({'album': 'foo', 'labelid': 'bar'}, ('bar', ('foo',), ())),
             ({'album': 'foo', 'labelid': 'bar', 'musicbrainz_albumid': 'quux'},
-                (('foo',), (), 'bar')),
-            ({'albumartist': 'a'}, ((), ('a',), '')),
+                ('bar', ('foo',), ())),
+            ({'albumartist': 'a'}, ('', (), ('a',))),
             ]
         for tags, expected in album_key_tests:
             afile = AudioFile(**tags)
@@ -961,6 +1000,20 @@ class TAudioFile(TestCase):
         audio["title"] = u"foo"
         audio.reload()
         self.assertNotEqual(audio.get("title"), u"foo")
+
+    def test_reload_externally_modified(self):
+        config.set("editing", "save_to_songs", True)
+        fn = self.quux("~filename") + ".mp3"
+        shutil.copy(get_data_path('silence-44-s.mp3'), fn)
+        orig = MusicFile(fn)
+        copy = MusicFile(fn)
+        orig["~#rating"] = SOME_RATING
+        copy["~#rating"] = ANOTHER_RATING
+        orig.write()
+        orig.reload()
+        copy.reload() # should pick up the change to the file
+        assert orig("~#rating") == SOME_RATING, "reloading failed"
+        assert copy("~#rating") == SOME_RATING, "should have picked up external change"
 
     def test_reload_fail(self):
         audio = MusicFile(get_data_path('silence-44-s.mp3'))
@@ -1116,3 +1169,12 @@ class Treplay_gain(TestCase):
             self.failUnlessAlmostEqual(
                 val, exp, places=5,
                 msg="%s should be %s not %s" % (key, exp, val))
+
+    def test_human_time_tags(self):
+        now = int(time.time())
+        tags = {t: now for t in TIME_TAGS}
+        tags["~filename"] = "/dev/null"
+        af = AudioFile(tags)
+        for t in TIME_TAGS:
+            assert af(t) == now, "Numeric dates broken"
+            assert af(t.replace("~#", "~")) == format_date(now), "Human date broken"

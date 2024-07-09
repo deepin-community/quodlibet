@@ -26,9 +26,11 @@ class SkipDisliked(ShufflePlugin, OrderInOrder):
     PLUGIN_DESC = _("Adds a play order (shuffle) mode that plays in order, "
                     "but skips tracks with a rating "
                     "below (or equal to) a given threshold.")
+    display_name = _("Skip disliked tracks")
+    accelerated_name = _("Skip _disliked tracks")
 
     @classmethod
-    def PluginPreferences(self, window):
+    def PluginPreferences(cls, window):
         vb = Gtk.VBox(spacing=10)
         vb.set_border_width(0)
 

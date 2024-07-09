@@ -1,4 +1,4 @@
-# Copyright 2016 - 2020 Nick Boultbee
+# Copyright 2016 - 2022 Nick Boultbee
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@ if os.name == "nt" or sys.platform == "darwin":
 
 from quodlibet import _
 from quodlibet.formats import AudioFile
-from quodlibet.util import monospace, escape
+from quodlibet.util import monospace
 from quodlibet.util.tags import _TAGS
 
 _TOTAL_MQTT_ITEMS = 5
@@ -54,7 +54,7 @@ class Config:
 
 
 _ACCEPTS_PATTERNS = (_("Accepts QL Patterns e.g. %s") %
-                     monospace(escape('<~artist~title>')))
+                     monospace('<~artist~title>'))
 
 
 class MqttPublisherPlugin(EventPlugin, PluginConfigMixin):
@@ -134,16 +134,16 @@ class MqttPublisherPlugin(EventPlugin, PluginConfigMixin):
         self._set_up_mqtt_client()
 
     _CONFIG = [
-        (_("Broker hostname"), Config.HOST,
-         _("broker hostname / IP (defaults to localhost)")),
+        (_("Broker hostname / IP"), Config.HOST,
+         _("Defaults to localhost")),
 
-        (_("Broker port"), Config.PORT, _("broker port (defaults to 1883)")),
+        (_("Broker port"), Config.PORT, _("Defaults to 1883")),
 
-        (_("Broker username"), Config.USERNAME, _("broker username")),
+        (_("Broker username"), Config.USERNAME, None),
 
-        (_("Broker password"), Config.PASSWORD, _("broker password")),
+        (_("Broker password"), Config.PASSWORD, None),
 
-        (_("Topic"), Config.TOPIC, _("Topic")),
+        (_("Topic"), Config.TOPIC, None),
 
         (_("Playing Pattern"),
          Config.PAT_PLAYING,
@@ -187,7 +187,8 @@ class MqttPublisherPlugin(EventPlugin, PluginConfigMixin):
             lbl = Gtk.Label(label=label + ":")
             lbl.set_size_request(140, -1)
             lbl.set_alignment(xalign=0.0, yalign=0.5)
-            entry.set_tooltip_markup(tooltip)
+            if tooltip is not None:
+                entry.set_tooltip_markup(tooltip)
             lbl.set_mnemonic_widget(entry)
             t.attach(lbl, 0, 1, i, i + 1, xoptions=FILL)
             t.attach(entry, 1, 2, i, i + 1, xoptions=FILL | EXPAND)

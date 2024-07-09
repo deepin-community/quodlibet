@@ -1,5 +1,5 @@
 # Copyright 2005 Joe Wreschnig, Michael Urman
-#           2016 Nick Boultbee
+#        2016-23 Nick Boultbee
 #           2018 Peter Strulo
 #
 # This program is free software; you can redistribute it and/or modify
@@ -9,7 +9,7 @@
 
 from gi.repository import Gtk, Pango
 
-from quodlibet import config
+from quodlibet import config, print_d
 from quodlibet import util
 from quodlibet import browsers
 from quodlibet import app
@@ -256,6 +256,7 @@ class LibraryBrowser(Window, util.InstanceTracker, PersistentWindowMixin):
         view = SongList(library, update=True)
         view.info.connect("changed", self.__set_totals)
         self.songlist = view
+        self.songlist.sortable = not Kind.can_reorder
 
         sw = ScrolledWindow()
         sw.set_shadow_type(Gtk.ShadowType.IN)
@@ -315,6 +316,7 @@ class LibraryBrowser(Window, util.InstanceTracker, PersistentWindowMixin):
             bg = background_filter()
             if bg:
                 songs = list(filter(bg, songs))
+        print_d(f"Setting {len(songs)} songs...")
         self.songlist.set_songs(songs, sorted)
 
     def __enqueue(self, view, path, column, player):
@@ -349,6 +351,5 @@ class LibraryBrowser(Window, util.InstanceTracker, PersistentWindowMixin):
     def __set_totals(self, info, songs):
         i = len(songs)
         length = sum(song.get("~#length", 0) for song in songs)
-        t = self.browser.status_text(count=i,
-                                     time=util.format_time_preferred(length))
+        t = self.browser.status_text(count=i, time=util.format_time_preferred(length))
         self.__statusbar.set_text(t)

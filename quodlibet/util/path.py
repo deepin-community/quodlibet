@@ -1,5 +1,5 @@
 # Copyright 2004-2009 Joe Wreschnig, Michael Urman, Steven Robertson
-#           2011-2019 Nick Boultbee
+#           2011-2022 Nick Boultbee
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -9,6 +9,7 @@
 import os
 import io
 import re
+import stat
 import sys
 import errno
 import codecs
@@ -17,12 +18,12 @@ from urllib.parse import urlparse, quote, unquote
 
 from gi.repository import GLib
 
-from senf import (fsnative, bytes2fsn, fsn2bytes, expanduser, sep, expandvars,
-                  fsn2text, path2fsn, uri2fsn)
+from senf import (fsnative, bytes2fsn, fsn2bytes,
+                  fsn2text, path2fsn, uri2fsn, _fsnative)
 
 from . import windows
 from .environment import is_windows
-from .misc import environ, NamedTemporaryFile
+from .misc import NamedTemporaryFile
 
 if sys.platform == "darwin":
     from Foundation import NSString
@@ -38,18 +39,6 @@ def mkdir(dir_, *args):
     except OSError as e:
         if e.errno != errno.EEXIST or not os.path.isdir(dir_):
             raise
-
-
-def glib2fsn(path):
-    """Takes a glib filename and returns a fsnative path"""
-
-    return path
-
-
-def fsn2glib(path):
-    """Takes a fsnative path and returns a glib filename"""
-
-    return path
 
 
 def uri2gsturi(uri):
@@ -71,7 +60,7 @@ def iscommand(s):
         return os.path.isfile(s) and os.access(s, os.X_OK)
     else:
         s = s.split()[0]
-        path = environ.get('PATH', '') or os.defpath
+        path = os.environ.get('PATH', '') or os.defpath
         for p in path.split(os.path.pathsep):
             p2 = os.path.join(p, s)
             if os.path.isfile(p2) and os.access(p2, os.X_OK):
@@ -134,7 +123,7 @@ def escape_filename(s: str, safe: bytes = b''):
     return bytes2fsn(quoted.encode("ascii"), "utf-8")
 
 
-def unescape_filename(filename: fsnative) -> str:
+def unescape_filename(filename: _fsnative) -> str:
     """Unescape a string in a manner suitable for a filename.
 
     Args:
@@ -145,6 +134,49 @@ def unescape_filename(filename: fsnative) -> str:
 
     assert isinstance(filename, fsnative)
     return fsn2text(unquote(filename))
+
+
+def join_path_with_escaped_name_of_legal_length(path: str, stem: str, ext: str) -> str:
+    """Returns a path joined with the escaped stem and the unescaped extension.
+    Stem is trimmed until the filename fits into the filesystems maximum file length"""
+
+    # returns the maximum possible filename length at path (subtract one for dot)
+    max_stem_length = os.pathconf(path, 'PC_NAME_MAX') - 1 - len(ext)
+
+    escaped_stem = escape_filename(stem)
+    while len(escaped_stem) > max_stem_length:
+        # We don't want to break the escaping, so we only trim the actual name
+        stem = stem[:max_stem_length]
+        max_stem_length -= 1
+        escaped_stem = escape_filename(stem)
+
+    return os.path.join(path, f'{escaped_stem}.{ext}')
+
+
+def stem_of_file_name(file_name: str) -> str:
+    """:return: file name without the extension.
+
+    Note these examples showcasing edge cases:
+
+    >>> stem_of_file_name('a.b.c')
+    'a.b'
+    >>> stem_of_file_name('.test')
+    '.test'
+    """
+    return os.path.splitext(file_name)[0]
+
+
+def extension_of_file_name(file_name: str) -> str:
+    """:return: extension of the file name. Is empty, or starts with a period.
+
+    Note these examples showcasing edge cases:
+
+    >>> extension_of_file_name('a.b.c')
+    '.c'
+    >>> extension_of_file_name('.test')
+    ''
+    """
+    return os.path.splitext(file_name)[-1]
 
 
 def unexpand(filename):
@@ -191,7 +223,7 @@ def xdg_get_system_data_dirs():
         from gi.repository import GLib
         dirs = []
         for dir_ in GLib.get_system_data_dirs():
-            dirs.append(glib2fsn(dir_))
+            dirs.append(dir_)
         return dirs
 
     data_dirs = os.getenv("XDG_DATA_DIRS")
@@ -205,7 +237,7 @@ def xdg_get_system_data_dirs():
 def xdg_get_cache_home():
     if os.name == "nt":
         from gi.repository import GLib
-        return glib2fsn(GLib.get_user_cache_dir())
+        return GLib.get_user_cache_dir()
 
     data_home = os.getenv("XDG_CACHE_HOME")
     if data_home:
@@ -217,7 +249,7 @@ def xdg_get_cache_home():
 def xdg_get_data_home():
     if os.name == "nt":
         from gi.repository import GLib
-        return glib2fsn(GLib.get_user_data_dir())
+        return GLib.get_user_data_dir()
 
     data_home = os.getenv("XDG_DATA_HOME")
     if data_home:
@@ -229,7 +261,7 @@ def xdg_get_data_home():
 def xdg_get_config_home():
     if os.name == "nt":
         from gi.repository import GLib
-        return glib2fsn(GLib.get_user_config_dir())
+        return GLib.get_user_config_dir()
 
     data_home = os.getenv("XDG_CONFIG_HOME")
     if data_home:
@@ -266,7 +298,7 @@ def parse_xdg_user_dirs(data):
             continue
         if len(values) != 1:
             continue
-        paths[key] = os.path.normpath(expandvars(values[0]))
+        paths[key] = os.path.normpath(os.path.expandvars(values[0]))
 
     return paths
 
@@ -384,7 +416,7 @@ def limit_path(path, ellipsis=True):
     assert isinstance(path, fsnative)
 
     main, ext = os.path.splitext(path)
-    parts = main.split(sep)
+    parts = main.split(os.sep)
     for i, p in enumerate(parts):
         # Limit each path section to 255 (bytes on linux, chars on win).
         # http://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits
@@ -399,7 +431,7 @@ def limit_path(path, ellipsis=True):
                 p = p[:limit]
         parts[i] = p
 
-    return sep.join(parts) + ext
+    return os.sep.join(parts) + ext
 
 
 def get_home_dir():
@@ -408,27 +440,28 @@ def get_home_dir():
     if os.name == "nt":
         return windows.get_profile_dir()
     else:
-        return expanduser("~")
+        return os.path.expanduser("~")
 
 
-def ishidden(path):
-    """Returns if a directory/ file is considered hidden by the platform.
+def is_hidden(path: _fsnative) -> bool:
+    """Returns if a directory / file is considered hidden by the platform.
 
     Hidden meaning the user should normally not be exposed to those files when
     opening the parent directory in the default file manager using the default
     settings.
 
     Does not check if any of the parents are hidden.
-    In case the file/dir does not exist the result is implementation defined.
+    If the file / dir does not exist, the result is implementation defined.
 
-    Args:
-        path (fsnative)
-    Returns:
-        bool
+    :param path: the path to check
+    :return: True if and only if the path is considered hidden on the system
     """
 
-    # TODO: win/osx
-    return os.path.basename(path).startswith(".")
+    if sys.platform == "windows":
+        return bool(os.stat(path).st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN)
+    basename = os.path.basename(path)
+    # Let's allow "...and Justice For All" etc (#3916)
+    return basename.startswith(".") and basename[1:2] != "."
 
 
 def uri_is_valid(uri):

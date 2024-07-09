@@ -2,27 +2,29 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
+import re
+from pathlib import Path
+
+import pytest
 
 from tests import TestCase, skipUnless
 from tests.helper import ListWithUnused as L
 
-import os
-import re
+ACCEPTABLE_STOCK = [
+    b'media-next', b'media-previous', b'media-play',
+    b'media-pause']
 
-import pytest
 try:
     import polib
 except ImportError:
     polib = None
 
-import quodlibet
-from quodlibet.util import get_module_dir
 from quodlibet.util.string.titlecase import human_title
 from gdist import gettextutil
 
-
-QL_BASE_DIR = os.path.dirname(get_module_dir(quodlibet))
-PODIR = os.path.join(QL_BASE_DIR, "po")
+# Don't use get_module_dir(), as venvs can arrange things differently
+QL_BASE_PATH = Path(__file__).parent.parent
+PO_PATH = QL_BASE_PATH / "po"
 
 
 def has_gettext_util():
@@ -35,14 +37,12 @@ def has_gettext_util():
 
 class MissingTranslationsException(Exception):
     def __init__(self, missing):
-        msg = ("No reference in POTFILES.in to: " +
-               ", ".join(missing))
-        super().__init__(msg)
+        super().__init__("No reference in POTFILES.in to: " + ", ".join(missing))
 
 
 @pytest.mark.skipif(not has_gettext_util(), reason="no gettext")
 def test_potfile_format():
-    with gettextutil.create_pot(PODIR) as pot_path:
+    with gettextutil.create_pot(PO_PATH) as pot_path:
         gettextutil.check_pot(pot_path)
 
 
@@ -50,15 +50,14 @@ class TPOTFILESIN(TestCase):
 
     def test_no_extra_entries(self):
         """Works without polib installed..."""
-        with open(os.path.join(PODIR, "POTFILES.in")) as f:
+        with open(PO_PATH / "POTFILES.in") as f:
             for fn in f:
-                path = os.path.join(QL_BASE_DIR, fn.strip())
-                assert os.path.isfile(path), \
-                    "Can't read '%s' from POTFILES.in" % path
+                path = QL_BASE_PATH / fn.strip()
+                assert path.is_file(), f"Can't read {path!r} from POTFILES.in"
 
     @pytest.mark.skipif(not has_gettext_util(), reason="no gettext")
     def test_missing(self):
-        results = gettextutil.get_missing(PODIR)
+        results = gettextutil.get_missing(PO_PATH)
         if results:
             raise MissingTranslationsException(results)
 
@@ -69,19 +68,15 @@ class TPot(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with gettextutil.create_pot(PODIR) as pot_path:
+        with gettextutil.create_pot(PO_PATH) as pot_path:
             cls.pot = polib.pofile(pot_path)
 
     def conclude(self, fails, reason):
         if fails:
             def format_occurrences(e):
                 return ', '.join('%s:%s' % o for o in e.occurrences)
-            messages = [
-                "'%s' (%s)" % (e.msgid, format_occurrences(e)) for e in fails
-            ]
-            self.fail(
-                "One or more messages did not pass (%s):\n" % reason
-                + '\n'.join(messages))
+            msg = "\n".join(f"{e.msgid!r} ({format_occurrences(e)})" for e in fails)
+            self.fail(f"One or more messages did not pass ({reason}):\n{msg}")
 
     def test_multiple_format_placeholders(self):
         fails = []
@@ -89,8 +84,7 @@ class TPot(TestCase):
         for entry in self.pot:
             if len(reg.findall(entry.msgid)) > 1:
                 fails.append(entry)
-        self.conclude(fails,
-            "uses multiple non-named format placeholders")
+        self.conclude(fails, "uses multiple non-named format placeholders")
 
     def test_label_capitals(self):
         """ Check that various input labels (strings ending with a ':') are
@@ -194,22 +188,26 @@ class TPot(TestCase):
             musicbrainz - lower case letters
             musicbrainz_track_id - ok
             musicbrainz.org - ok
+            @(musicbrainz - ok
         """
         terms = (
             'AcoustID', 'D-Bus', 'Ex Falso', 'GNOME', 'GStreamer', 'Internet',
             'iPod', 'Last.fm', 'MusicBrainz', 'Python', 'Quod Libet',
             'Replay Gain', 'ReplayGain', 'Squeezebox', 'Wikipedia')
+        ok_prefixes = ('@(')
         ok_suffixes = ('_', '.org')
         fails = []
 
         for entry in self.pot:
+            msg = entry.msgid
             for term in terms:
-                if term.lower() not in entry.msgid.lower():
+                if term.lower() not in msg.lower():
                     continue
-                i = entry.msgid.lower().find(term.lower())
-                if entry.msgid[i + len(term):].startswith(ok_suffixes):
+                i = msg.lower().find(term.lower())
+                if (msg[:i].endswith(ok_prefixes)
+                        or msg[i + len(term):].startswith(ok_suffixes)):
                     continue
-                if term not in entry.msgid:
+                if term not in msg:
                     fails.append(entry)
 
         self.conclude(fails, "incorrect letter case for a term")
@@ -244,32 +242,29 @@ class TPot(TestCase):
 
 
 class POMixin:
+    lang: str
 
     @pytest.mark.skipif(not has_gettext_util(), reason="no gettext")
     def test_pos(self):
-        po_path = gettextutil.get_po_path(PODIR, self.lang)
+        po_path = gettextutil.get_po_path(PO_PATH, self.lang)
         gettextutil.check_po(po_path)
 
-    def test_gtranslator_blows_goats(self):
-        with open(os.path.join(PODIR, "%s.po" % self.lang), "rb") as h:
+    def test_gtranslator_breakage(self):
+        with open(self.current_po_path(), "rb") as h:
             for line in h:
                 if line.strip().startswith(b"#"):
                     continue
-                self.failIf(b"\xc2\xb7" in line,
-                            "Broken GTranslator copy/paste in %s:\n%r" % (
-                    self.lang, line))
+                assert b"\xc2\xb7" not in line, \
+                    f"Broken GTranslator copy/paste in {self.lang}:\n{line!r}"
 
     def test_gtk_stock_items(self):
-        with open(os.path.join(PODIR, "%s.po" % self.lang), "rb") as h:
+        with open(self.current_po_path(), "rb") as h:
             for line in h:
                 if line.strip().startswith(b'msgstr "gtk-'):
                     parts = line.strip().split()
                     value = parts[1].strip('"')[4:]
-                    self.failIf(value and value not in [
-                        b'media-next', b'media-previous', b'media-play',
-                        b'media-pause'],
-                                "Invalid stock translation in %s\n%s" % (
-                        self.lang, line))
+                    self.failIf(value and value not in ACCEPTABLE_STOCK,
+                                f"Invalid stock translation in {self.lang}\n{line}")
 
     def conclude(self, fails, reason):
         if fails:
@@ -277,14 +272,9 @@ class POMixin:
                 occurences = [(self.lang + ".po", e.linenum)]
                 occurences += e.occurrences
                 return ', '.join('%s:%s' % o for o in occurences)
-            messages = [
-                '"%s" - "%s" (%s)' % (e.msgid, e.msgstr, format_occurrences(e))
-                for e in fails
-            ]
-
-            self.fail(
-                "One or more messages did not pass (%s).\n%s" % (
-                    reason, "\n".join(messages)))
+            message = "\n".join(f"{e.msgid!r} - {e.msgstr!r} ({format_occurrences(e)})"
+                                for e in fails)
+            self.fail(f"One or more messages did not pass ({reason}).\n{message}")
 
     def test_original_punctuation_present(self):
         if polib is None:
@@ -302,7 +292,7 @@ class POMixin:
         # so the test needs to strip that part before checking the endings.
         par = re.compile(r' ?\(_\w\)$')
 
-        for entry in polib.pofile(os.path.join(PODIR, "%s.po" % self.lang)):
+        for entry in polib.pofile(str(self.current_po_path())):
             if not entry.msgstr or entry.obsolete or 'fuzzy' in entry.flags:
                 continue
 
@@ -328,8 +318,11 @@ class POMixin:
 
         self.conclude(fails, "ending punctuation missing")
 
+    def current_po_path(self) -> Path:
+        return PO_PATH / f"{self.lang}.po"
 
-for lang in gettextutil.list_languages(PODIR):
+
+for lang in gettextutil.list_languages(PO_PATH):
     testcase = type('PO.' + str(lang), (TestCase, POMixin), {})
     testcase.lang = lang
     globals()['PO.' + lang] = testcase

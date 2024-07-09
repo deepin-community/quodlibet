@@ -1,3 +1,287 @@
+.. _News:
+
+.. _release-4.6.0:
+
+4.6.0 (2023-08-22) - Ah, perfect, the banner that satisfies everyone
+--------------------------------------------------------------------
+
+Packaging Changes
+ * Quodlibet now requires Python 3.8+
+ * It also now supports Python 3.11
+ * libsoup3 is now required (up from version 2)
+
+ℹ️ A highlight of the changes in 4.6.0 is below.
+For full details,
+see `the 4.6 commit log <https://github.com/quodlibet/quodlibet/compare/release-4.5.0...release-4.6.0>`_.
+
+General
+ * Audiofeeds: enable clipboard when adding feed :pr:`4128` (:user:`Nick Boultbee <declension>`)
+ * Fix aggregate units on numeric comparisons :pr:`4089` (:user:`Nick Boultbee <declension>`)
+ * Fix playlist renaming bug :pr:`4079` (:user:`Nick Boultbee <declension>`)
+ * Remove some senf helpers that are more or less the same in the Python 3 stdlib :pr:`4041` (:user:`lazka`)
+ * Require Python 3.8 :pr:`3956` (:user:`lazka`)
+ * Move to libsoup3 (#4294) (:user:`Nick Boultbee <declension>`)
+ * Add Stop command to Control menu (#4213) (:user:`Markus Koller`)
+ * Allow disabling of songlist sorting (#4273) (:user:`Nick Boultbee <declension>`)
+ * Add human time tags (#4275) (:user:`Nick Boultbee <declension>`)
+ * Nicer prefs switches (#4274) (:user:`Nick Boultbee <declension>`)
+ * Fix shuffle history (#4255) (:user:`Thomas Leberbauer`)
+ * Fix pop-up menu for Podcasts (#4193) (:user:`Nick Boultbee <declension>`)
+ * Add CLI arg: --with-pattern (#4166) (:user:`Felicián Németh`)
+ * Modernise entire preferences UI 🎨 (#4175) (:user:`Nick Boultbee <declension>`)
+ * Allow songlist editing of simple text tags in-place 🆙 (#4173) (:user:`Nick Boultbee <declension>`)
+ * Make --rating-up work when song has no previous rating (#4172) (:user:`Felicián Németh`)
+ * Don't make the WaitLoadWindow modal (#4171) (:user:`David Greaves`)
+ * Prompt on attempting to extend a playlist with DnD'ed tracks (#2746) (:user:`Meriipu`)
+ * Stop query date regex from matching > 4 digit year (#4162) (:user:`afontenot`)
+ * Add "edit" button to column tag editor window (#4148) (:user:`afontenot`)
+ * Track List: Add shortcut Ctrl-Return to the searchbar (#4141) (:user:`Felicián Németh`)
+ * Fix crash when using covergrid + default art size (#4151) (:user:`afontenot`)
+ * Disable ordering when active order disappears (#4156) (:user:`afontenot`)
+ * Improve notif progress bar (#4147) (:user:`Nick Boultbee <declension>`)
+ * Playlists: log about potential import failures (#4146) (:user:`Nick Boultbee <declension>`)
+ * Fix regression of --print-query (#4142) (:user:`Felicián Németh`)
+ * Rename feeds -> podcasts (#3513) (#4139) (:user:`Nick Boultbee <declension>`)
+ * Audiofeeds: handle non-feed URLs (#4126) (:user:`Nick Boultbee <declension>`)
+ * Fix image size scaling when cover is reloaded (#4115) (:user:`Thomas Leberbauer`)
+ * Covergrid using FlowBox (#4101) (:user:`Thomas Leberbauer`)
+ * Softer cover art outline (#4096) (:user:`Nick Boultbee <declension>`)
+ * Disable editing for Soundcloud tracks (#4097) (:user:`Nick Boultbee <declension>`)
+ * Fix lots of browser padding issues (#4066) (:user:`Nick Boultbee <declension>`)
+ * Make songs heading entries editable (#4046) (#4047) (:user:`Nick Boultbee <declension>`)
+ * XSPF formatting (#4028) (:user:`Nick Boultbee <declension>`)
+ * Support library watching in the core (#3654) (:user:`Nick Boultbee <declension>`)
+ * Write XSPFs with proper namespace (internal v2) (#3984) (:user:`Nick Boultbee <declension>`)
+ * Move library: don't force source dir to exist (#3980) (:user:`Nick Boultbee <declension>`)
+ * Fix add playlists errors (#3973) (#3974) (:user:`TheMelmacian`)
+ * Fix display pattern not updating in browsers (#3975) (:user:`Thomas Leberbauer`)
+
+
+Developer
+ * osx: fix installation with setuptools (:user:`Christoph Reiter <lazka>`)
+ * osx: update jhbuild (:user:`Christoph Reiter <lazka>`)
+ * osx: fix cargo/rustup usage in jhbuild (:user:`Christoph Reiter <lazka>`)
+ * osx_bundle: move to 10.13+ (:user:`Christoph Reiter <lazka>`)
+
+
+Plugins
+ * Improve and fix Sonos plugin (#4290) (:user:`Nick Boultbee <declension>`)
+ * Tidy export to folder plugin (:user:`Nick Boultbee <declension>`)
+ * Unique filters plugin (#4264) (:user:`LoveIsGrief`)
+ * playlist export: prefix relative paths with '.' if the path starts with '#' (#4236) (:user:`Felix Krull`)
+ * Add a new internal tag: ~json (#4195) (:user:`Felicián Németh`)
+ * 🆕 Bookmarks notifications plugin (#4174) (:user:`Nick Boultbee <declension>`)
+ * Move listenbrainz plugin to the right location (#4192) (:user:`Felicián Németh`)
+ * the sync_to_device plugin shouldn't delete files named 'cover.jpg' (#4083) (:user:`Jan`)
+ * Album art downloader: improve GUI (#4106) (:user:`Nick Boultbee <declension>`)
+ * Album art downloader: remove Amazon (#4105) (:user:`Nick Boultbee <declension>`)
+ * Embed Images plugin: allow choosing a file from disk (#4071) (:user:`Nick Boultbee <declension>`)
+ * Add plugin for rich presence in Discord. (#3998) (:user:`Aditi K`)
+
+
+Translations
+ * Thanks to all our translators old and new.
+ * These are now listed on the `Weblate QL project <https://hosted.weblate.org/projects/quodlibet/quodlibet/>`_.
+
+
+
+.. _release-4.5.0:
+
+4.5.0 (2022-03-29) - What sort of things would you like to know?
+----------------------------------------------------------------
+
+Packaging Changes:
+ * Quodlibet should now support Python 3.10
+ * This will be the last release supporting Windows 7
+
+
+General:
+ * Allow auto-playing added songs in Queue Only mode (:pr:`3947`) (:user:`afontenot`)
+ * Soundcloud: Better Stream fetching (:pr:`3949`) (:user:`Nick Boultbee <declension>`)
+ * Don't clear queue when set_explicit returns None (:pr:`3913`) (:user:`afontenot`)
+ * Waveform plugin improvements: (:pr:`3944`) (:user:`Nick Boultbee <declension>`)
+ * Strip blank tags out from metadata lists (:pr:`3914`) (:user:`afontenot`)
+ * Edit tags: Hide multi-line tags if selected (:pr:`3941`) (:user:`Nick Boultbee <declension>`)
+ * Lyrics pane: switch to genius.com (:user:`Nick Boultbee <declension>`)
+ * Validate units for tag expressions (:pr:`3932`) (:user:`Nick Boultbee <declension>`)
+ * Support downloading remote files (:pr:`3926`) (:user:`Nick Boultbee <declension>`)
+ * Improve the console plug-in in a number of ways (:pr:`3923`) (:user:`afontenot`)
+ * Wrap 'tags' into a link to the tags wiki page (:pr:`3920`) (:user:`Tobi`)
+ * Add an option to set how missing titles are displayed (:pr:`3905`) (:user:`Jej`)
+ * Increase space between icon and text (:pr:`3918`) (:user:`Jej`)
+ * Icon relooking proposal (:pr:`3889`) (:user:`Jej`)
+ * Plugin window GUI improvements (:pr:`3900`) (:user:`Jej`)
+ * A new option to set how a song is considered as played (:pr:`3873`) (:user:`Jej`)
+ * Rewrite Soundcloud interaction a bit (:pr:`3893`) (:user:`Nick Boultbee <declension>`)
+ * New config option for search bar historic count (:pr:`3885`) (:user:`Jej`)
+ * Clear queue icon and config button improvement (:pr:`3879`) (:user:`Jej`)
+ * Less annoying autosave of play queue (:pr:`3649`) (:user:`Nick Boultbee <declension>`)
+ * Make current file react to changes on the current song (:pr:`3731`) (:pr:`3871`) (:user:`Nick Boultbee <declension>`)
+ * Tracks count UI enhacement  (:pr:`3867`) (:user:`Jej`)
+ * Reworked "Stop on pause" language (:pr:`3809`) (:user:`Allan Nordhøy`)
+ * Pass entered playlist title through (:user:`Nick Boultbee <declension>`)
+ * Scrobble plugin: autosave cache more (#2951 / #3649) (:pr:`3857`) (:user:`Nick Boultbee <declension>`)
+ * Save play queue batched or periodically (#3649) (:pr:`3854`) (:user:`Nick Boultbee <declension>`)
+ * Add a keyboard shortcut for rescanning the library (:pr:`3781`) (:user:`Marcin Mielniczuk`)
+ * Make some overlooked strings translatable (:pr:`3782`) (:user:`Till Berger`)
+ * Make link text translatable in plugin descriptions (:pr:`3806`) (:user:`Till Berger`)
+ * Feature: Support description and language in lyrics (USLT) [WIP, comments appreciated] (:pr:`3769`) (:user:`h88e22dgpeps56sg`)
+ * Allow markup in plugin descriptions (:pr:`3792`) (:user:`Nick Boultbee <declension>`)
+ * ReplayGain: Disambiguate column heading (:pr:`3788`) (:user:`Till Berger`)
+ * Set empty input shape for hints window (:pr:`3749`) (:user:`Thomas Leberbauer`)
+ * Add autocompletion to console plugin (:pr:`3728`) (:user:`halfbrained`)
+ * New plugin to send a stop signal to the player backend on pause (:pr:`2848`) (:user:`othalan`)
+ * Added a unified and flexible ImportExport plugin (:pr:`3705`) (:user:`Joschua Gandert <CreamyCookie>`)
+ * Add Album column to plugin dialog window (:pr:`3650`) (:user:`Maksim Liauchuk`)
+ * Moved Burn CD plugin commands into custom commands plugin (:pr:`3636`) (:user:`Joschua Gandert <CreamyCookie>`)
+ * Closes #3631: Remove Web Lyrics plugin (:pr:`3633`) (:user:`Joschua Gandert <CreamyCookie>`)
+ * 🆕 Playlists library (#518) (:pr:`3532`) (:user:`Nick Boultbee <declension>`)
+ * Prioritise IDs in album keys (:pr:`3617`) (:user:`Nick Boultbee <declension>`)
+ * Remove tracks when scandirs removed (:pr:`3621`) (:user:`Nick Boultbee <declension>`)
+ * Support .m4b (AudioBook)files (:pr:`3602`) (:user:`Nick Boultbee <declension>`)
+ * Ignore auto_sort when shuffle is enabled (:pr:`3581`) (:user:`luk1337`)
+ * Finish up collections -> collections.abc migration :pr:`3800` (:user:`luk1337`)
+ * Follow-up to #3749 :pr:`3766` (:user:`slosd`)
+
+Fixes:
+ * Fix Soundcloud auth (a bit) (:user:`Nick Boultbee <declension>`)
+ * Exfalso: fix prefs (:pr:`3838`) (:user:`Nick Boultbee <declension>`)
+ * Handle missing playlist library better (:user:`Nick Boultbee <declension>`)
+ * Fix excess minimum height of plugin window with long description (:pr:`3785`) (:user:`Till Berger`)
+ * Fix string that should not be translatable (:pr:`3783`) (:user:`Till Berger`)
+ * Remove some superfluous tooltip text (:pr:`3784`) (:user:`Till Berger`)
+ * Fix hidden files (#3916) (:pr:`3917`) (:user:`Nick Boultbee <declension>`)
+ * fix 'Convert Encoding' plugin (:pr:`3825`) (:user:`Sergey`)
+ * Make missing pixbufs less fatal (:pr:`3758`) (:user:`Nick Boultbee <declension>`)
+ * Do not start dragging from empty treeview area (#3538) (:pr:`3751`) (:user:`Thomas Leberbauer`)
+ * Fix translated menu labels for playorder plugins and add accelerators (:pr:`3787`) (:user:`Till Berger`)
+ * Fix RG wikipedia link (:user:`Nick Boultbee <declension>`)
+ * Soundcloud: rework API (:pr:`3768`) (:user:`Nick Boultbee <declension>`)
+ * Soundcloud: ignore tracks with no URL (:user:`Nick Boultbee <declension>`)
+ * Fix info area not updating on songlist removal (:pr:`3663`) (:user:`Nick Boultbee <declension>`)
+ * EF: Fix double-calling of header bar code (:pr:`3711`) (:user:`Nick Boultbee <declension>`)
+ * Fix soundcloud parsing (:pr:`3721`) (:user:`Nick Boultbee <declension>`)
+ * Ignore dotfiles in Playlist dir (:user:`Nick Boultbee <declension>`)
+ * Bugfix and clean up for utils.fifo (:pr:`3761`) (:user:`Martijn Pieters`)
+ * Players: Only query song from a source if there is one (:user:`Nick Boultbee <declension>`)
+ * Fix icon for library removal prompt (:user:`Nick Boultbee <declension>`)
+ * Fix #3611: assert that __fav_stations is not None (:user:`Joschua Gandert <CreamyCookie>`)
+ * Propagate repeat options properly in mpris2 plugin (:pr:`3723`) (:user:`luk1337`)
+ * Tray Icon: Better errors / logging for import failures (:user:`Nick Boultbee <declension>`)
+ * PL library: only filter out dotfile-like files (:user:`Nick Boultbee <declension>`)
+ * CLI: better error for unmodifiable files (:user:`Nick Boultbee <declension>`)
+ * reload(): only migrate actual internal tags (:pr:`3618`) (:user:`Nick Boultbee <declension>`)
+ * Various fixes around lyrics and remote files (:user:`Nick Boultbee <declension>`)
+ * Ex Falso prefs: fix missing parent bug (:user:`Nick Boultbee <declension>`)
+ * Don't throw when no song is playing (:user:`Nick Boultbee <declension>`)
+
+
+Developer:
+ * Improve release notes script (:user:`Nick Boultbee <declension>`)
+ * test_setup: fix with newer setuptools (:user:`Christoph Reiter <lazka>`)
+ * tests: don't disable gstreamer registry updates under flatpak (:user:`Christoph Reiter <lazka>`)
+ * Lastfmsync tidy (:pr:`3937`) (:user:`Nick Boultbee <declension>`)
+ * Inkscape --export-png deprecated option (:pr:`3870`) (:user:`Jej`)
+ * Mypy - change directory in tests (:user:`Nick Boultbee <declension>`)
+ * Formats: various lint improvements (:user:`Nick Boultbee <declension>`)
+ * Scrobbler: small linting / refactorings (:user:`Nick Boultbee <declension>`)
+ * Xiph: modernise some Python (:user:`Nick Boultbee <declension>`)
+ * tests: skip test_libc on osx (:user:`Christoph Reiter <lazka>`)
+ * Refactor gettext code (:pr:`3737`) (:user:`Nick Boultbee <declension>`)
+ * Fix some test signal handling (:pr:`3774`) (:user:`Nick Boultbee <declension>`)
+ * Small Soundcloud refactors, split out: (:pr:`3773`) (:user:`Nick Boultbee <declension>`)
+ * Tidy gettext tests (:user:`Nick Boultbee <declension>`)
+ * dmgbuild: port from biplist to plistlib (:user:`Christoph Reiter <lazka>`)
+ * macos: more updates; switch from gnutls to openssl (:user:`Christoph Reiter <lazka>`)
+ * macos: a round of jhbuild package updates (:user:`Christoph Reiter <lazka>`)
+ * checkupdates: reduce threadpool workers to not hit arch api rate limit (:user:`Christoph Reiter <lazka>`)
+ * checkupdates: port to pypi json api (:user:`Christoph Reiter <lazka>`)
+ * Support flaky tests (:pr:`3695`) (:user:`Nick Boultbee <declension>`)
+ * Added ObjectListMatcher utility class (:pr:`3656`) (:user:`Joschua Gandert <CreamyCookie>`)
+ * CI: fix Windows test directory detection (:pr:`3646`) (:user:`Nick Boultbee <declension>`)
+ * Remove PicklingLibrary & better library typing (:user:`Nick Boultbee <declension>`)
+ * Tests: dump flake8 output better on failure (:user:`Nick Boultbee <declension>`)
+ * Update the contact options (:user:`Christoph Reiter <lazka>`)
+ * rtd: enforce a newer sphinx-rtd-theme version (:user:`Christoph Reiter <lazka>`)
+ * rtd: try installing a newer sphinx_rtd_theme (:user:`Christoph Reiter <lazka>`)
+ * Fix copool tests, extract common code (:pr:`3657`) (:user:`Nick Boultbee <declension>`)
+ * Tweak `test_terms_letter_case` to account for query-syntax examples (:pr:`3813`) (:user:`Till Berger`)
+ * Fixed Code Quality Issues (:pr:`3583`) (:user:`Ankit Dobhal`)
+ * Add release infos in appdata files (:user:`Christoph Reiter <lazka>`)
+ * Fix distcheck (:user:`Christoph Reiter <lazka>`)
+ * Commit .pot file to git :pr:`3665` (:user:`lazka`)
+ * setup.py: add a create_pot command :pr:`3664` (:user:`lazka`)
+ * wininst: stop pinning pypi deps (:user:`Christoph Reiter <lazka>`)
+ * wininst: remove frei0r (:user:`Christoph Reiter <lazka>`)
+ * Create GitHub Actions automated testing for Fedora 33 (resolves #3542) (:pr:`3558`) (:user:`Phillip Julien`)
+ * downloads: remove all unstable repos (:user:`Christoph Reiter <lazka>`)
+ * Update universe (but lock) (:pr:`3607`) (:user:`Nick Boultbee <declension>`)
+
+
+Docs:
+ * Corrected description of ~people internal tag. (:pr:`3938`) (:user:`Alexander Browne`)
+ * Docs: Update release checklist / maintenance (:user:`Nick Boultbee <declension>`)
+ * Tidy docs around queue (:user:`Nick Boultbee <declension>`)
+ * Docs: tidy some images (:user:`Nick Boultbee <declension>`)
+ * Update exfalso.rst (:pr:`3845`) (:user:`Steve Harris`)
+ * Update quodlibet.rst (:pr:`3846`) (:user:`Steve Harris`)
+ * Update patterns.rst (:pr:`3819`) (:user:`everdred`)
+ * Update macos devenv setup documentation (:pr:`3759`) (:user:`Martijn Pieters`)
+ * Update the translation guide for the weblate switch (:user:`Christoph Reiter <lazka>`)
+ * docs: show the translation status (:user:`Christoph Reiter <lazka>`)
+ * docs: mention weblate in the translation guide (:user:`Christoph Reiter <lazka>`)
+ * Lots of README updated :book: (:pr:`3625`) (:user:`Nick Boultbee <declension>`)
+ * FAQ: where QL store data outdated (:pr:`3878`) (:user:`Jej`)
+
+
+Translations:
+ * Galician
+    * Adolfo Jayme Barrientos (308)
+ * Turkish
+    * Ömer Faruk Çakmak (3)
+    * E-Akcaer (1149)
+ * German
+    * Till Berger (292)
+ * Danish
+    * scootergrisen (17)
+ * Greek
+    * Dimitris Papageorgiou (77)
+ * Ukrainian
+    * Tymofii Lytvynenko (1)
+    * Andrij Mizyk (542)
+ * Portuguese
+    * Adolfo Jayme Barrientos (8)
+    * ssantos (111)
+ * English (United Kingdom)
+    * Nick Boultbee (4)
+    * Tom Fryers (4)
+ * Indonesian
+    * I. Musthafa (31)
+ * Dutch
+    * ikmaak (5)
+    * Heimen Stoffels (96)
+ * Spanish
+    * germe-fur (85)
+    * Adolfo Jayme Barrientos (1205)
+ * French
+    * Adolfo Jayme Barrientos (1)
+    * Jej@github (136)
+    * Bundy01 (481)
+ * Finnish
+    * Kristian Laakkonen (166)
+ * Korean
+    * Johndoe0153 (419)
+ * Slovak
+    * menom (75)
+    * Marek Felšöci (1527)
+ * Chinese (Simplified)
+    * stoodvolleyball (1)
+    * 梁普行 (5)
+    * Pig Fang (19)
+    * JER-ry (249)
+    * Eric (464)
+
+
 .. _release-4.4.0:
 
 4.4.0 (2021-02-28) - PERFECTION IS BACK ON THE MENU
@@ -5,54 +289,54 @@
 
 Packaging Changes:
  * One ``quodlibet/`` subdirectory has been removed - e.g. ``quodlibet/tests/`` -> ``tests/`` (#3238)
- * Move to Python 3.7 (#3433) :pr:`3438` (:user:`Nick Boultbee <declension>`)
- * macos: bundle.sh: clone from ../.. rather than .., fixing #3393. :pr:`3394` (:user:`Sam Hathaway <smammy>`)
+ * Move to Python 3.7 (closing #3433) :pr:`3438` (:user:`Nick Boultbee <declension>`)
+ * macos: bundle.sh: clone from ../.. rather than .., fixing #3393. (:pr:`3394`) (:user:`Sam Hathaway <smammy>`)
  * win_installer: pass options to build script on env switch :pr:`3328` (:user:`Gabor Karsay <gkarsay>`)
  * Depend on musicbrainzngs>=0.6 (:user:`Christoph Reiter <lazka>`)
 
 
 General:
- * Switch to XSPF for Playlists (#1122) (#3242) (:user:`Nick Boultbee <declension>`
+ * Switch to XSPF for Playlists (closing #1122) :pr:`3242` (:user:`Nick Boultbee <declension>`)
  * Renamed "Search Library" to "Track List" browser (:user:`Joschua Gandert <CreamyCookie>`)
- * Support moving library folders (scandirs) (#3506) (:user:`Nick Boultbee <declension>`)
- * Support JACK via Gstreamer (#3511) (:user:`Nick Boultbee <declension>`)
- * Make ID3 Replaygain ALL_CAPS (#3475) (:user:`Nick Boultbee <declension>`)
+ * Support moving library folders (scandirs) :pr:`3506` (:user:`Nick Boultbee <declension>`)
+ * Support JACK via Gstreamer :pr:`3511` (:user:`Nick Boultbee <declension>`)
+ * Make ID3 Replaygain ALL_CAPS `:pr:`3475` (:user:`Nick Boultbee <declension>`)
  * MP4: Support description tag (:user:`Nick Boultbee <declension>`)
  * Advanced prefs: use checkboxes (:user:`Nick Boultbee <declension>`)
  * Add comment to track headers (:user:`Nick Boultbee <declension>`)
- * Change None to empty string to fix TypeError in missing.py (#3548) (:user:`Ironbalden`)
+ * Change None to empty string to fix TypeError in missing.py :pr:`3548` (:user:`Ironbalden`)
  * Plugin window: don't appear on top (:user:`Nick Boultbee <declension>`)
  * Info Area: Allow space to play / pause (:user:`Nick Boultbee <declension>`)
- * Allow ctrl-[shift]-tab in Notebook windows (Edit Tags, Song Info, Prefs etc) (#3496) (:user:`Nick Boultbee <declension>`)
- * Playlists: don't clear on deletion (#3491) (:user:`Nick Boultbee <declension>`)
- * IRadio - do station updates in background (#3310) (:user:`Nick Boultbee <declension>`)
- * Improve plugin window style (#3481) (:user:`Nick Boultbee <declension>`)
+ * Allow ctrl-[shift]-tab in Notebook windows (Edit Tags, Song Info, Prefs etc) (:pr:`3496`) (:user:`Nick Boultbee <declension>`)
+ * Playlists: don't clear on deletion (fixing #3491) (:user:`Nick Boultbee <declension>`)
+ * IRadio - do station updates in background :pr:`3310` (:user:`Nick Boultbee <declension>`)
+ * Improve plugin window style :pr:`3481` (:user:`Nick Boultbee <declension>`)
  * Query: allow validation from extensions :up: (:user:`Nick Boultbee <declension>`)
- * Plugins: improve query plugins (#3485) (:user:`Nick Boultbee <declension>`)
+ * Plugins: improve query plugins :pr:`3485` (:user:`Nick Boultbee <declension>`)
  * Saved list editor: improve style (:user:`Nick Boultbee <declension>`)
- * Tag Editor: Add smart replacer for colon delimiters (#3456) (:user:`Nick Boultbee <declension>`)
- * Improve local cover art detection (#3454) (#3459) (:user:`Nick Boultbee <declension>`)
- * Add support for TKEY 'Initial Key' column (#3420) (:user:`Cole Robinson`)
- * add ability to sort by date added to Album List Browser (#3410) (:user:`Uriel Zajaczkovski`)
+ * Tag Editor: Add smart replacer for colon delimiters (:pr:`3456`) (:user:`Nick Boultbee <declension>`)
+ * Improve local cover art detection (#3454) (:pr:`3459`) (:user:`Nick Boultbee <declension>`)
+ * Add support for TKEY 'Initial Key' column (:pr:`3420`) (:user:`Cole Robinson`)
+ * add ability to sort by date added to Album List Browser (:pr:`3410`) (:user:`Uriel Zajaczkovski`)
  * Add originalartistsort (:user:`Nick Boultbee <declension>`)
- * add check to Missing.py, fix #3336 (#3382) (:user:`Ironbalden`)
- * Add support for ~elapsed and ~#elapsed (#3379) (:user:`Nick Boultbee <declension>`)
- * Format date panes (#3346) (#3349) (:user:`Nick Boultbee <declension>`)
- * Update song order in song list when modified (#2509) (:user:`Thomas Leberbauer`)
+ * add check to Missing.py, fix #3336 (:pr:`3382`) (:user:`Ironbalden`)
+ * Add support for ~elapsed and ~#elapsed (:pr:`3379`) (:user:`Nick Boultbee <declension>`)
+ * Format date panes (closing #3346) :pr:`3349` (:user:`Nick Boultbee <declension>`)
+ * Update song order in song list when modified :pr:`2509` (:user:`Thomas Leberbauer`)
  * Restyle the search query :pr:`3517` (:user:`Nick Boultbee <declension>`)
- * Fix non-splitter EditTags plugins (#3468) :pr:`3470` (:user:`Nick Boultbee <declension>`)
+ * Fix non-splitter EditTags plugins (fixing #3468) :pr:`3470` (:user:`Nick Boultbee <declension>`)
  * Support feedparser 6.0 :pr:`3464` (:user:`Christoph Reiter <lazka>`)
  * formats: Don't return lyrics with embedded nulls :pr:`3402` (:user:`Christoph Reiter <lazka>`)
  * Fix setting pane mode :pr:`3365` (:user:`Michael Kuhn <michaelkuhn>`)
- * windows: Fix playing files on network shares (#3361) :pr:`3371` (:user:`d10n`)
+ * windows: Fix playing files on network shares (fixing #3361) :pr:`3371` (:user:`d10n`)
  * Restarting :pr:`3211` (:user:`blimmo`)
  * Closes #946: Rename cover filename option :pr:`3235` (:user:`Joschua Gandert <CreamyCookie>`)
  * Closes #1769: Allow multiple entries for cover files :pr:`3236` (:user:`Joschua Gandert <CreamyCookie>`)
 
 Plugins:
- * Add listenbrainz scrobbling plugin. (#3528) (:user:`Ian Campbell`)
- * First version of Musicbrainz Sync plugin that sends ratings (#3180) (:user:`LoveIsGrief`)
- * add plugin 'synchronize to device' (#2636) (:user:`Jan`)
+ * Add listenbrainz scrobbling plugin. :pr:`3528` (:user:`Ian Campbell`)
+ * First version of Musicbrainz Sync plugin that sends ratings (:pr:`3180`) (:user:`LoveIsGrief`)
+ * add plugin 'synchronize to device' :pr:`636` (:user:`Jan`)
  * Fix weighted shuffle not shuffling when total rating is zero. :pr:`3397` (:user:`blimmo`)
  * ext/inhibit: Add option to inhibit suspend :pr:`3309` (:user:`antigone-xyz`)
  * trayicon: only check for org.kde.StatusNotifierWatcher for the appindicator :pr:`3313` (:user:`Christoph Reiter <lazka>`)
@@ -60,23 +344,23 @@ Plugins:
  * Add "Rate" to D-Bus API :pr:`3455` (:user:`LoveIsGrief`)
  * Prettier sync lyrics (:user:`Nick Boultbee <declension>`)
  * Synchronizedlyrics: Rewrite lyrics parsing, supporting >60min songs (:user:`Nick Boultbee <declension>`)
- * Add Sonos playlist export plugin (#3487) (:user:`Nick Boultbee <declension>`)
+ * Add Sonos playlist export plugin :pr:`3487` (:user:`Nick Boultbee <declension>`)
  * Plugin: fix Cover Art window persistence (:user:`Nick Boultbee <declension>`)
  * Skip songs: rename & naming / text updates (:user:`Nick Boultbee <declension>`)
  * Cover Art Downloader: remove failing downloads from results (:user:`Nick Boultbee <declension>`)
  * Cover Art: Improve Musicbrainz downloader (:user:`Nick Boultbee <declension>`)
  * Cover Art download: only trigger plugin if `album` tag available (:user:`Nick Boultbee <declension>`)
- * Added AutoUpdateTagsInFiles plugin (#3200) (:user:`Joschua Gandert <creamycookie>`)
+ * Added AutoUpdateTagsInFiles plugin :pr:`3200` (:user:`Joschua Gandert <creamycookie>`)
 
 Translations:
  * Update Polish translation :pr:`3323`
  * Update italian translation :pr:`3405` (:user:`dprimon`)
  * Updated Dutch translation :pr:`3441` (:user:`Vistaus`)
- * Update British English translation (#3483) (:user:`Nick Boultbee <declension>`)
+ * Update British English translation :pr:`3483` (:user:`Nick Boultbee <declension>`)
 
 Documentation:
  * Update plugin development page (:user:`Nick Boultbee <declension>`)
- * Update plugins.rst to include locations on MacOS. (#3562) (:user:`BraveSentry`)
+ * Update plugins.rst to include locations on MacOS. :pr:`3562` (:user:`BraveSentry`)
  * Fixed documentation URLs :pr:`3425` (:user:`TehPsychedelic`)
  * Fix link to contributing guide :pr:`3416` (:user:`remvee`)
  * Various docs updates / improvements (:user:`Nick Boultbee <declension>`)
@@ -90,9 +374,9 @@ Developer:
  * CI: re-enable flatpak tests :pr:`3501` (:user:`Christoph Reiter <lazka>`)
  * CI: install MSYS2 packages via the GHA :pr:`3458` (:user:`Christoph Reiter <lazka>`)
  * Tests: improve source scanning (:user:`Nick Boultbee <declension>`)
- * Refactor: tidy Gstreamer player code (#3489) (:user:`Nick Boultbee <declension>`)
+ * Refactor: tidy Gstreamer player code :pr:`3489` (:user:`Nick Boultbee <declension>`)
  * Add .editorconfig that agrees with PEP-008 and our Flake8 config (:user:`Nick Boultbee <declension>`)
- * Refactor ID3 tag writing for readability (#3476) (:user:`Nick Boultbee <declension>`)
+ * Refactor ID3 tag writing for readability `pr:3476` (:user:`Nick Boultbee <declension>`)
  * More type hints (:user:`Christoph Reiter <lazka>`)
  * CI: Port more things to github actions (:user:`Christoph Reiter <lazka>`)
  * Switch from pycodestyle/pyflakes to flake8 (:user:`Christoph Reiter <lazka>`)
@@ -114,7 +398,7 @@ Packaging Changes:
 
 Translations:
   * Update brazilian portuguese translations :pr:`3123` (:user:`Hugo Gualandi <hugomg>`)
-  * Bulgarian translation fixes :pr`3147` (:user:`cybercop-montana`)
+  * Bulgarian translation fixes :pr:`3147` (:user:`cybercop-montana`)
   * Update Hebrew translation :pr:`3164` :pr:`3274` (:user:`Avi Markovitz <avma>`)
   * French translation update :pr:`3183` (:user:`Bundy01`)
   * Update German translation (:user:`Till Berger <Mellthas>`)
@@ -150,7 +434,7 @@ Plugins:
   * Custom Commands: Don't modify command when using parameters :bug:`3185` :pr:`3232` (:user:`CreamyCookie`)
   * Import/export plugin: accept full filenames when renaming :pr:`3282` (:user:`Fredrik Strupe <frestr>`)
   * acoustid: fix queries always returning "unknown" :bug:`3269`
-  * Fix embed images plugin submenu not showing sometimes :pr`3303` (:user:`Nick Boultbee <declension>`)
+  * Fix embed images plugin submenu not showing sometimes :pr:`3303` (:user:`Nick Boultbee <declension>`)
 
 
 .. _release-4.2.1:
